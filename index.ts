@@ -2,7 +2,7 @@ import express from 'express';
 import router from './routes';
 
 const app = express();
-const PORT = 8000;
+const PORT = process.env.PORT || 80;
 
 // app.get('/', (req,res) => res.send('Express + TypeScript Server'));
 
