@@ -11,8 +11,7 @@
     "start": "node index.js",
     "dev": "nodemon index.ts",
     "build": "tsc --project ./",
-    "lint": "tslint -c tslint.json -p tsconfig.json",
-    "postinstall": "tsc"
+    "lint": "tslint -c tslint.json -p tsconfig.json"
   },
   "compilerOptions": {
     "outDir": "dist"
@@ -22,10 +21,13 @@
   "license": "ISC",
   "devDependencies": {
     "@types/express": "^4.17.13",
+    "@types/firebase": "^3.2.1",
     "@types/node": "^17.0.18"
   },
   "dependencies": {
     "express": "^4.17.3",
+    "firebase": "^9.6.7",
+    "firebase-admin": "^10.0.2",
     "nodemon": "^2.0.15",
     "ts-node": "^10.5.0",
     "typescript": "^4.5.5"
