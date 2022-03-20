@@ -1,3 +1,3 @@
-web: npm run build && npm run start
+web: node index.js
 
 release: npx prisma generate
