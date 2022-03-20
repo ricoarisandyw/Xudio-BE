@@ -7,19 +7,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
 model user {
-  id       Int     @id @default(autoincrement())
+  id       Int     @default(autoincrement())
   username String? @db.VarChar
   password String? @db.VarChar
+
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
 model user_detail {
-  iduser     Int     @id @default(autoincrement())
+  iduser     Int?
   email      String? @db.VarChar
   image      String? @db.VarChar
   name       String? @db.VarChar
-  nip        String? @db.VarChar
+  nop        String? @db.VarChar
   role       String? @db.VarChar
   created_at String? @db.VarChar
   updated_at String? @db.VarChar
+  id         Int     @default(autoincrement())
+
+  @@ignore
 }
