@@ -24,3 +24,14 @@ model user_detail {
   updated_at String? @db.VarChar
   id         Int     @id @default(autoincrement())
 }
+
+model course {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar
+  description String?   @db.VarChar
+  begindate   String?   @db.VarChar
+  duedate     String?   @db.VarChar
+  createdat   DateTime  @db.Date
+  updatedat   DateTime? @default(now()) @db.Date
+  companyid   Int?
+}

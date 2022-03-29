@@ -1,5 +1,8 @@
+import { PrismaClient } from ".prisma/client";
 import { RequestHandler } from "express";
 import { success } from "../utils/response-builder";
+
+const prisma = new PrismaClient();
 
 export default class CourseController {
     static getCourse: RequestHandler = (req, res) => {
@@ -49,4 +52,30 @@ export default class CourseController {
             "fileURL": "www.oke.co/ini_gambar.png",
         }));
     }
+
+    static createOrUpdate: RequestHandler = async (req, res) => {
+        const payload = req.body
+        const model = 'courses'
+
+        if(payload.id){
+            const result = await prisma.course.update({
+                where: {
+                    id: payload.id
+                },
+                data: {
+                    ...payload
+                }
+            })
+            res.send(success("Successfully update course", result))
+        } else {
+            const result = await prisma.course.create({
+                data: {
+                    ...payload
+                }
+            })
+            res.send(success('Create course', result))
+        }
+        
+    }
+
 }

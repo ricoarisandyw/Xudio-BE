@@ -10,6 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
     "dev": "nodemon index.ts",
+    "update-db": "prisma db pull && prisma generate",
     "build": "tsc && prisma generate",
     "postinstall": "npm run build",
     "lint": "tslint -c tslint.json -p tsconfig.json"
@@ -22,6 +23,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/cookie-parser": "^1.4.2",
+    "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "@types/firebase": "^3.2.1",
     "@types/jsonwebtoken": "^8.5.8",
@@ -32,6 +34,7 @@
     "@types/bcrypt": "^5.0.0",
     "bcrypt": "^5.0.1",
     "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
     "express": "^4.17.3",
     "firebase": "^9.6.7",
     "firebase-admin": "^10.0.2",

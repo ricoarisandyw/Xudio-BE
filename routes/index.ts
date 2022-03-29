@@ -1,7 +1,7 @@
 import express from "express";
-import courseRouter from "./course";
-import scoreRouter from "./score";
-import userRouter from "./user";
+import courseRouter from "./course.routes";
+import scoreRouter from "./score.routes";
+import userRouter from "./user.routes";
 
 const router = express.Router();
 

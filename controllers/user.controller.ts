@@ -1,23 +1,13 @@
 import { RequestHandler } from "express";
 import { error, success } from "../utils/response-builder";
 import bcrypt from 'bcrypt';
-import { generateAccessToken, getIdFromJWT } from "../utils/jwt-util";
+import { generateAccessToken, getIdFromJWT, logoutJWT } from "../utils/jwt-util";
 import { mailgunClient } from "../utils/mailgun-util";
 import { PrismaClient } from ".prisma/client";
 import { encrypt, checkEncrypt} from "../utils/encrypt";
 const prisma = new PrismaClient();
 
 export default class UserController {
-    static testPrisma: RequestHandler = async (req, res) => {
-        try {
-            const users = await prisma.user.findMany();
-            res.json(users);
-        } catch (error) {
-            console.log(error);
-            res.status(500).json(error);
-        }
-    }
-
     static signup: RequestHandler = async (req, res) => {
         try {
             const exist = await prisma.user.findFirst({
@@ -55,14 +45,53 @@ export default class UserController {
         }))
     }
 
+    static createOrUpdateUserDetail: RequestHandler = async (req, res) => {
+        const payload = req.body;
+        const jwt = req.cookies.jwt
+        const iduser = getIdFromJWT(jwt);
+
+        try {
+            const existing = await prisma.user_detail.findFirst({
+                where: {
+                    iduser: +iduser
+                }
+            })
+            console.log("Existing", existing, iduser)
+            if(existing){
+                const updated = await prisma.user_detail.update({
+                    where: {
+                        id: existing.id
+                    },
+                    data: {
+                        ...payload,
+                        iduser: +iduser
+                    }
+                })
+                res.send(success("Successfully update user detail", updated))
+            } else {
+                await prisma.user_detail.create({
+                    data: {
+                        ...payload,
+                        iduser: +iduser
+                    },
+                })
+                res.send(success("Successfully create user detail", {
+                    payload
+                }))
+            }
+        } catch (error) {
+            res.send(error)
+        }
+    }
+
     static getUser: RequestHandler = async (req, res) => {
         const jwt = req.cookies.jwt
         try {
             if(jwt){
-                const decoded = getIdFromJWT(jwt) as any;
+                const iduser = getIdFromJWT(jwt);
                 const user_detail = await prisma.user_detail.findFirst({
                     where: {
-                        iduser: decoded.id
+                        iduser: +iduser
                     }
                 })
                 res.send(success("Successfully get user", user_detail))
@@ -93,7 +122,10 @@ export default class UserController {
         if(user && user.password && await checkEncrypt(req.body.password, user.password)){
             res.cookie('jwt', generateAccessToken({ id: user.id }))
             res.send(success("Successfully logged in", {
+                "userID": "1",
                 "username": user.username,
+                "isSuccess": true,
+                "token": ""
             }));
         } else {
             res.send(error('Something wrong', {
@@ -102,22 +134,12 @@ export default class UserController {
         }
     }
 
-    static updateProfile: RequestHandler = async (req, res) => {
-        const user = await prisma.user_detail.update({
-            where: {
-
-            },
-            data: {
-
-            }
-        })
-    }
-
     static logout: RequestHandler = (req, res) => {
+        res.cookie('jwt', logoutJWT())
         res.send(success("Logout", {
             "isSuccess": true
         }));
-    }   
+    }
 
     static getCourse: RequestHandler = (req, res) => {
         res.send(success("Get Course", [
