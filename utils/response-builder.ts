@@ -6,7 +6,7 @@ export function success(message: string, data: any) {
     }
 }
 
-export function error(message: string, data: any) {
+export function failed(message: string, data: any) {
     return {
         status: "error",
         message: message,

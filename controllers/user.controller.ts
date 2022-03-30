@@ -1,8 +1,7 @@
 import { RequestHandler } from "express";
-import { error, success } from "../utils/response-builder";
+import { failed, success } from "../utils/response-builder";
 import bcrypt from 'bcrypt';
 import { generateAccessToken, getIdFromJWT, logoutJWT } from "../utils/jwt-util";
-import { mailgunClient } from "../utils/mailgun-util";
 import { PrismaClient } from ".prisma/client";
 import { encrypt, checkEncrypt} from "../utils/encrypt";
 const prisma = new PrismaClient();
@@ -99,7 +98,7 @@ export default class UserController {
                 throw new Error("No token found")
             }
         } catch(e: any){
-            res.send(error(e.message, {}))
+            res.send(failed(e.message, {}))
         }
     }
 
@@ -128,7 +127,7 @@ export default class UserController {
                 "token": ""
             }));
         } else {
-            res.send(error('Something wrong', {
+            res.send(failed('Something wrong', {
                 "message": "please check your username and password"
             }))
         }
