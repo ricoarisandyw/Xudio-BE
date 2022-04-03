@@ -4,9 +4,72 @@ import bcrypt from 'bcrypt';
 import { generateAccessToken, getIdFromJWT, logoutJWT } from "../utils/jwt-util";
 import { PrismaClient } from ".prisma/client";
 import { encrypt, checkEncrypt} from "../utils/encrypt";
+import { convertNullToEmptyString } from "../utils/json.util";
 const prisma = new PrismaClient();
 
 export default class UserController {
+    static updateUser: RequestHandler = async (req, res) => {
+        try {
+            if(req.headers.authorization){
+                let encryptedPassword = ''
+                const id = getIdFromJWT(req.headers.authorization.replace('Bearer ', ''))
+                const { oldPassword, newPassword } = req.body;
+                const user = await prisma.user.findFirst({
+                    where: {
+                        id: +id
+                    }
+                });
+                if (!user) {
+                    res.send(failed('User not found', {}));
+                }
+                if (user && oldPassword && user.password) {
+                    const check = await checkEncrypt(oldPassword, user.password);
+                    if (!check) {
+                        res.send(failed('Wrong password', {}));
+                    }
+                    encryptedPassword = await encrypt(newPassword);
+                }
+                const updatedUser = await prisma.user.update({
+                    where: {
+                        id: +id
+                    },
+                    data: { 
+                        password: encryptedPassword
+                    }
+                });
+                res.send(success("Successfully update password", updatedUser));
+            } else {
+                res.send(failed('Authorization not found', {}));
+            }
+        } catch(e){
+            res.send(failed("Failed to update password", e));
+        }
+    }
+
+    static getAll: RequestHandler = async (req, res) => {
+        console.log("GET ALL")
+        try {
+            const users = await prisma.user.findMany();
+            const userWithDetail = await Promise.all(users.map(async (user) => {
+                const detail = await prisma.user_detail.findFirst({
+                    where: {
+                        iduser: user.id
+                    }
+                });
+                return convertNullToEmptyString({
+                    ...user,
+                    password: "",
+                    status: "active",
+                    detail: detail ? detail : {}
+                })
+            }))
+
+            res.send(success("Successfully get all users", userWithDetail));
+        } catch (error) {
+            res.send(failed("Failed to get all users", error));
+        }
+    }
+
     static signup: RequestHandler = async (req, res) => {
         try {
             const exist = await prisma.user.findFirst({
@@ -84,16 +147,18 @@ export default class UserController {
     }
 
     static getUser: RequestHandler = async (req, res) => {
-        const jwt = req.cookies.jwt
+        console.log(req.headers)
+        const jwt = req.headers.authorization as string;
         try {
             if(jwt){
-                const iduser = getIdFromJWT(jwt);
+                const iduser = getIdFromJWT(jwt.replace("Bearer ", ""));
                 const user_detail = await prisma.user_detail.findFirst({
                     where: {
                         iduser: +iduser
                     }
                 })
-                res.send(success("Successfully get user", user_detail))
+                const removeNull = JSON.parse(JSON.stringify(user_detail).replace(/null/g, "\"\""))
+                res.send(success("Successfully get user", removeNull))
             } else {
                 throw new Error("No token found")
             }
@@ -119,12 +184,13 @@ export default class UserController {
             }
         })
         if(user && user.password && await checkEncrypt(req.body.password, user.password)){
-            res.cookie('jwt', generateAccessToken({ id: user.id }))
+            const token = generateAccessToken({ id: user.id })
+            res.cookie('jwt', token)
             res.send(success("Successfully logged in", {
                 "userID": "1",
                 "username": user.username,
                 "isSuccess": true,
-                "token": ""
+                "token": token
             }));
         } else {
             res.send(failed('Something wrong', {

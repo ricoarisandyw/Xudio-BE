@@ -5,7 +5,7 @@ type JWTModel = { id: string }
 
 export function generateAccessToken(data: any) {
     if(env.TOKEN_SECRET){
-        return jwt.sign(data, env.TOKEN_SECRET, { expiresIn: '1000s' });
+        return jwt.sign(data, env.TOKEN_SECRET, { expiresIn: '10000s' });
     } else {
         throw new Error('Token secret not found');
     }

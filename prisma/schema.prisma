@@ -35,3 +35,12 @@ model course {
   updatedat   DateTime? @default(now()) @db.Date
   companyid   Int?
 }
+
+model user_in_course {
+  id          Int       @id @default(autoincrement())
+  idcourse    Int
+  iduser      Int
+  score       Int?
+  startcourse DateTime? @db.Date
+  endcourse   DateTime? @db.Date
+}
