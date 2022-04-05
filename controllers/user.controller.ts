@@ -173,7 +173,9 @@ export default class UserController {
             "activeCourse":"3",
             "dueCourse":"1",
             "passCourse":"2",
-            "notPassCourse":"2"
+            "notPassCourse":"2",
+            "averageScore":"97",
+            "roomJoined":"4",
         }))
     }
 

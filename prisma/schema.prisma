@@ -44,3 +44,12 @@ model user_in_course {
   startcourse DateTime? @db.Date
   endcourse   DateTime? @db.Date
 }
+
+model room {
+  id         Int     @id @default(autoincrement())
+  name       String? @db.VarChar
+  created_at String? @db.VarChar
+  status     String? @db.VarChar
+  filled     Int?
+  capacity   Int?
+}

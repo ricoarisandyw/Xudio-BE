@@ -8,6 +8,8 @@ userRouter.get('/', UserController.getAll);
 userRouter.post('/', UserController.signup);
 userRouter.put('/', UserController.updateUser);
 
+// USER ROOM
+
 userRouter.get('/getUser', UserController.getUser)
 userRouter.post('/detail', UserController.createOrUpdateUserDetail)
 userRouter.get('/password', UserController.getPassword)
