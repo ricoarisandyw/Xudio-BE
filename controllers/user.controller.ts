@@ -8,6 +8,26 @@ import { convertNullToEmptyString } from "../utils/json.util";
 const prisma = new PrismaClient();
 
 export default class UserController {
+    static getUserRoom: RequestHandler = async (req, res) => {
+        try {
+            if(req.headers.authorization){
+                let encryptedPassword = ''
+                const id = getIdFromJWT(req.headers.authorization.replace('Bearer ', ''))
+
+                const result = await prisma.user_in_room.findMany({
+                    where: {
+                        id_user: +id
+                    }
+                })
+                res.send(success("Successfully get my room", result))
+            } else {
+                res.send(failed('Authorization not found', {}));
+            }
+        } catch(e){
+            res.send(failed("Failed to update password", e));
+        }
+    }
+
     static updateUser: RequestHandler = async (req, res) => {
         try {
             if(req.headers.authorization){

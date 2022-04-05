@@ -9,6 +9,7 @@ userRouter.post('/', UserController.signup);
 userRouter.put('/', UserController.updateUser);
 
 // USER ROOM
+userRouter.get('/rooms', UserController.getUserRoom)
 
 userRouter.get('/getUser', UserController.getUser)
 userRouter.post('/detail', UserController.createOrUpdateUserDetail)

@@ -33,7 +33,9 @@ export default class RoomController {
         const result = await prisma.room.create({
             data: {
                 created_at: new Date().toISOString(),
-                ...payload,
+                name: payload.name,
+                capacity: +payload.capacity,
+                filled: +payload.filled,
             }
         })
         res.send(success("Successfully create room", result))
