@@ -5,6 +5,27 @@ import { success } from "../utils/response-builder";
 const prisma = new PrismaClient();
 
 export default class RoomController {
+    static join: RequestHandler = async (req, res) => {
+        const payload = req.body
+
+        const result = await prisma.user_in_room.create({
+            data: payload
+        })
+        res.send(success("Successfully join room", result))
+    }
+
+    static getAllUser: RequestHandler = async (req, res) => {
+        const { idRoom } = req.params
+
+        const result = await prisma.user_in_room.findMany({
+            where: {
+                id_room: +idRoom
+            }
+        })
+
+        res.send(success("Successfully get all user in room", result.map((value) => value.id_user)))
+    }
+
     static create: RequestHandler = async (req, res) => {
         const payload = req.body
 

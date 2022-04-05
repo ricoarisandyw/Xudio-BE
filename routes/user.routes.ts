@@ -17,6 +17,6 @@ userRouter.post('/login', UserController.login);
 userRouter.post('/signup', UserController.signup);
 userRouter.get('/logout', UserController.logout);
 userRouter.get('/:idUser/course', UserController.getCourse);
-userRouter.get('/:idUser/summary', UserController.getSummary)
+userRouter.get('/summary', UserController.getSummary)
 
 export default userRouter;
