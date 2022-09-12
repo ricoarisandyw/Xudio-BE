@@ -5,3 +5,7 @@ npm-debug.log
 
 // avoid compiled code
 *.js
+
+// avoid db from sqlite
+*.db
+*.db-journal

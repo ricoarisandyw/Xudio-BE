@@ -3,34 +3,55 @@ import { failed, success } from "../utils/response-builder";
 import bcrypt from 'bcrypt';
 import { generateAccessToken, getIdFromJWT, logoutJWT } from "../utils/jwt-util";
 import { PrismaClient } from ".prisma/client";
-import { encrypt, checkEncrypt} from "../utils/encrypt";
+import { encrypt, checkEncrypt } from "../utils/encrypt";
 import { convertNullToEmptyString } from "../utils/json.util";
 const prisma = new PrismaClient();
 
 export default class UserController {
     static getUserRoom: RequestHandler = async (req, res) => {
         try {
-            if(req.headers.authorization){
+            if (req.headers.authorization) {
                 let encryptedPassword = ''
                 const id = getIdFromJWT(req.headers.authorization.replace('Bearer ', ''))
 
                 const result = await prisma.user_in_room.findMany({
                     where: {
-                        id_user: +id
+                        idUser: +id
                     }
                 })
-                res.send(success("Successfully get my room", result))
+
+                const rooms = await prisma.room.findMany({
+                    where: {
+                        id: {
+                            in: result.map((r) => r.idRoom || 0)
+                        }
+                    }
+                })
+
+                // {"id", "name", "capacity", "filled", "createdAt", "updatedAt","image"}
+                // parse
+                const allRooms = rooms.map((r) => ({
+                    id: r.id,
+                    name: r.name,
+                    capacity: r.capacity,
+                    filled: r.filled,
+                    image: "",
+                    createdAt: r.createdAt,
+                    updateAt: new Date()
+                }))
+
+                res.send(success("Successfully get my room", allRooms))
             } else {
                 res.send(failed('Authorization not found', {}));
             }
-        } catch(e){
+        } catch (e) {
             res.send(failed("Failed to update password", e));
         }
     }
 
     static updateUser: RequestHandler = async (req, res) => {
         try {
-            if(req.headers.authorization){
+            if (req.headers.authorization) {
                 let encryptedPassword = ''
                 const id = getIdFromJWT(req.headers.authorization.replace('Bearer ', ''))
                 const { oldPassword, newPassword } = req.body;
@@ -53,7 +74,7 @@ export default class UserController {
                     where: {
                         id: +id
                     },
-                    data: { 
+                    data: {
                         password: encryptedPassword
                     }
                 });
@@ -61,7 +82,7 @@ export default class UserController {
             } else {
                 res.send(failed('Authorization not found', {}));
             }
-        } catch(e){
+        } catch (e) {
             res.send(failed("Failed to update password", e));
         }
     }
@@ -73,7 +94,7 @@ export default class UserController {
             const userWithDetail = await Promise.all(users.map(async (user) => {
                 const detail = await prisma.user_detail.findFirst({
                     where: {
-                        iduser: user.id
+                        idUser: user.id
                     }
                 });
                 return convertNullToEmptyString({
@@ -97,7 +118,7 @@ export default class UserController {
                     username: req.body.username
                 }
             });
-            if(!exist){
+            if (!exist) {
                 const user = await prisma.user.create({
                     data: {
                         username: req.body.username,
@@ -106,22 +127,22 @@ export default class UserController {
                 })
                 await prisma.user_detail.create({
                     data: {
-                        iduser: user.id,
+                        idUser: user.id,
                     }
                 })
-                res.send("User successfully registered");
+                res.send({ message: "User successfully registered" });
             } else {
-                res.send("Username already exist");
+                res.send({ message: "Username already exist" });
             }
-        } catch(e: any){
-            res.send(e.message)
+        } catch (e: any) {
+            res.send({ message: e.message }).status(500)
         }
     }
 
     static getPassword: RequestHandler = async (req, res) => {
         const password = "12345"
         const encryptedPassword = await bcrypt.hash(password, 10);
-        res.cookie('jwt', generateAccessToken({ userId: 'rico'}))
+        res.cookie('jwt', generateAccessToken({ userId: 'rico' }))
         res.send(success("Successfully get password", {
             password: encryptedPassword
         }))
@@ -135,18 +156,17 @@ export default class UserController {
         try {
             const existing = await prisma.user_detail.findFirst({
                 where: {
-                    iduser: +iduser
+                    idUser: +iduser
                 }
             })
-            console.log("Existing", existing, iduser)
-            if(existing){
-                const updated = await prisma.user_detail.update({
+            console.log("Existing", existing, iduser, payload)
+            if (existing) {
+                const updated = await prisma.user_detail.updateMany({
                     where: {
-                        id: existing.id
+                        idUser: +iduser
                     },
                     data: {
-                        ...payload,
-                        iduser: +iduser
+                        ...payload
                     }
                 })
                 res.send(success("Successfully update user detail", updated))
@@ -162,7 +182,7 @@ export default class UserController {
                 }))
             }
         } catch (error) {
-            res.send(error)
+            res.send({ message: error }).status(500)
         }
     }
 
@@ -170,47 +190,94 @@ export default class UserController {
         console.log(req.headers)
         const jwt = req.headers.authorization as string;
         try {
-            if(jwt){
+            if (jwt) {
                 const iduser = getIdFromJWT(jwt.replace("Bearer ", ""));
                 const user_detail = await prisma.user_detail.findFirst({
                     where: {
-                        iduser: +iduser
+                        idUser: +iduser
                     }
                 })
+
                 const removeNull = JSON.parse(JSON.stringify(user_detail).replace(/null/g, "\"\""))
-                res.send(success("Successfully get user", removeNull))
+
+                // parse
+                const response = {
+                    id: removeNull.id,
+                    email: removeNull.email,
+                    image: removeNull.image,
+                    name: removeNull.name,
+                    nip: removeNull.nip,
+                    role: removeNull.role
+                }
+
+                res.send(success("Successfully get user", response))
             } else {
                 throw new Error("No token found")
             }
-        } catch(e: any){
+        } catch (e: any) {
             res.send(failed(e.message, {}))
         }
     }
 
     static getSummary: RequestHandler = async (req, res) => {
-        res.send(success("Successfully get summary", {
-            "course":"4",
-            "activeCourse":"3",
-            "dueCourse":"1",
-            "passCourse":"2",
-            "notPassCourse":"2",
-            "averageScore":"97",
-            "roomJoined":"4",
-        }))
+        console.log("GET SUMMARY")
+        const jwt = req.headers.authorization as string;
+        try {
+            if (jwt) {
+                // {"id", "email", "image", "name", "nip", "role"=["ADMIN","USER"], "completedCourse", "totalCourse", "averageScore", "roomJoined"="1234"}
+                const iduser = getIdFromJWT(jwt.replace("Bearer ", ""));
+                const user = await prisma.user.findFirst({
+                    where: {
+                        id: +iduser
+                    }
+                })
+                console.log({ user })
+
+                const user_detail = await prisma.user_detail.findFirst({
+                    where: {
+                        idUser: +iduser
+                    }
+                })
+                console.log({ user_detail })
+
+                const courses = await prisma.user_in_course.findMany({
+                    where: {
+                        iduser: +iduser
+                    }
+                })
+                console.log({ courses })
+
+                res.send(success("Successfully get summary", {
+                    "id": user?.id,
+                    "email": user_detail?.email,
+                    "image": user_detail?.image,
+                    "name": user_detail?.name,
+                    "nip": user_detail?.nip,
+                    "role": user_detail?.role,
+                    "completedCourse": courses.length,
+                    "totalCourse": courses.length,
+                    "averageScore": courses.length,
+                    "roomJoined": courses.length
+                }))
+            } else {
+                res.send(failed("JWT false", {}))
+            }
+        } catch (e: any) {
+            res.send(failed(e.message, {}))
+        }
     }
 
-    static login: RequestHandler = async (req, res) =>{
+    static login: RequestHandler = async (req, res) => {
         const user = await prisma.user.findFirst({
             where: {
                 username: req.body.username
             }
         })
-        if(user && user.password && await checkEncrypt(req.body.password, user.password)){
+        if (user && user.password && await checkEncrypt(req.body.password, user.password)) {
             const token = generateAccessToken({ id: user.id })
             res.cookie('jwt', token)
             res.send(success("Successfully logged in", {
-                "userID": "1",
-                "username": user.username,
+                "id": user.id,
                 "isSuccess": true,
                 "token": token
             }));
@@ -231,18 +298,18 @@ export default class UserController {
     static getCourse: RequestHandler = (req, res) => {
         res.send(success("Get Course", [
             {
-              "uuid":"2",
-              "name":"Course Soldering",
-              "description":"Practice soldering",
-              "companyID":"1",
-              "progress": 0.3,
-              "startCourseAt": "2022-01-10T14:06:55.441Z",
-              "duration": 36000,
-              "endCourseAt": "2022-01-10T14:06:55.441Z",
-              "beginDate":"2022-01-10T14:06:55.441Z",
-              "dueDate": "2022-01-10T14:06:55.441Z",
-              "createdAt":"2022-01-10T14:06:55.441Z",
-              "updatedAt":"2022-01-10T14:06:55.441Z"
+                "uuid": "2",
+                "name": "Course Soldering",
+                "description": "Practice soldering",
+                "companyID": "1",
+                "progress": 0.3,
+                "startCourseAt": "2022-01-10T14:06:55.441Z",
+                "duration": 36000,
+                "endCourseAt": "2022-01-10T14:06:55.441Z",
+                "beginDate": "2022-01-10T14:06:55.441Z",
+                "dueDate": "2022-01-10T14:06:55.441Z",
+                "createdAt": "2022-01-10T14:06:55.441Z",
+                "updatedAt": "2022-01-10T14:06:55.441Z"
             }
         ]));
     }

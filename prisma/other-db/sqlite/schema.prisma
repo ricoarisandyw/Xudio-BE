@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL_SQLITE")
+  url      = env("DATABASE_URL")
 }
 
 model user {
@@ -18,7 +18,7 @@ model user_detail {
   email      String?
   image      String?
   name       String?
-  nip        String?
+  nop        String?
   role       String?
   createdAt String?
   updatedAt String?
@@ -33,13 +33,13 @@ model course {
   duedate     String?
   createdat   DateTime
   updatedat   DateTime? @default(now())
-  companyid   Int?
+  companyId   Int?
 }
 
 model user_in_course {
   id          Int       @id @default(autoincrement())
-  idcourse    Int
-  iduser      Int
+  idCourse    Int
+  idUser      Int
   score       Int?
   startcourse DateTime?
   endcourse   DateTime?
@@ -52,8 +52,6 @@ model room {
   status    String?
   filled    Int?
   capacity  Int?
-  adminRoom Int?
-  image     String?
 }
 
 model user_in_room {
@@ -65,4 +63,15 @@ model user_in_room {
 model video {
   id   Int     @id @default(autoincrement())
   link String?
+}
+
+model adminRoom {
+  id   Int     @id @default(autoincrement())
+  idRoom Int?
+}
+
+model roomInAdmin {
+  id   Int     @id @default(autoincrement())
+  idRoom Int?
+  idAdmin Int?
 }
