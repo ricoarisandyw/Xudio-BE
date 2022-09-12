@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "engines": {
-    "node": ">=14.0.0"
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
@@ -13,7 +10,9 @@
     "update-db": "prisma db pull && prisma generate",
     "build": "tsc && prisma generate",
     "postinstall": "npm run build",
-    "lint": "tslint -c tslint.json -p tsconfig.json"
+    "lint": "tslint -c tslint.json -p tsconfig.json",
+    "prisma-generate": "prisma generate",
+    "prisma-migrate": "prisma migrate dev"
   },
   "compilerOptions": {
     "outDir": "dist"
