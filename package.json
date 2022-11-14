@@ -1,49 +1,56 @@
 {
-  "name": "xudio-be",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "nodemon index.ts",
-    "update-db": "prisma db pull && prisma generate",
-    "build": "tsc && prisma generate",
-    "postinstall": "npm run build",
-    "lint": "tslint -c tslint.json -p tsconfig.json",
-    "prisma-generate": "prisma generate",
-    "prisma-migrate": "prisma migrate dev"
-  },
-  "compilerOptions": {
-    "outDir": "dist"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@types/cookie-parser": "^1.4.2",
-    "@types/cors": "^2.8.12",
-    "@types/express": "^4.17.13",
-    "@types/firebase": "^3.2.1",
-    "@types/jsonwebtoken": "^8.5.8",
-    "@types/node": "^17.0.18"
-  },
-  "dependencies": {
-    "@prisma/client": "^3.11.0",
-    "@types/bcrypt": "^5.0.0",
-    "bcrypt": "^5.0.1",
-    "chart.js": "^3.9.1",
-    "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
-    "express": "^4.17.3",
-    "firebase": "^9.6.7",
-    "firebase-admin": "^10.0.2",
-    "form-data": "^4.0.0",
-    "jsonwebtoken": "^8.5.1",
-    "mailgun.js": "^5.0.1",
-    "nodemon": "^2.0.15",
-    "prisma": "^3.11.0",
-    "ts-node": "^10.5.0",
-    "typescript": "^4.5.5"
-  }
+   "name": "xudio-be",
+   "version": "1.0.0",
+   "description": "",
+   "main": "index.js",
+   "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "ts-node src/index.ts",
+      "dev": "nodemon index.ts",
+      "update-db": "prisma db pull && prisma generate",
+      "build": "tsc",
+      "postinstall": "npm run build",
+      "lint": "tslint -c tslint.json -p tsconfig.json",
+      "db-generate": "typeorm-ts-node-esm migration:generate src/migrations/migration -d src/data-source.ts",
+      "db-sync": "typeorm-ts-node-esm schema:sync -d src/data-source.ts",
+      "db-run": "typeorm-ts-node-esm migration:run -d ./src/data-source.ts",
+      "db-drop": "typeorm-ts-node-esm schema:drop -d ./src/data-source.ts"
+   },
+   "compilerOptions": {
+      "outDir": "dist"
+   },
+   "keywords": [],
+   "author": "",
+   "license": "ISC",
+   "devDependencies": {
+      "@types/cookie-parser": "^1.4.2",
+      "@types/cors": "^2.8.12",
+      "@types/express": "^4.17.13",
+      "@types/firebase": "^3.2.1",
+      "@types/jsonwebtoken": "^8.5.8",
+      "@types/node": "^16.11.10",
+      "ts-node": "10.7.0",
+      "typescript": "4.5.2"
+   },
+   "dependencies": {
+      "@prisma/client": "^3.11.0",
+      "@types/bcrypt": "^5.0.0",
+      "bcrypt": "^5.0.1",
+      "chart.js": "^3.9.1",
+      "cookie-parser": "^1.4.6",
+      "cors": "^2.8.5",
+      "express": "^4.17.3",
+      "firebase": "^9.6.7",
+      "firebase-admin": "^10.0.2",
+      "form-data": "^4.0.0",
+      "jsonwebtoken": "^8.5.1",
+      "mailgun.js": "^5.0.1",
+      "nodemon": "^2.0.15",
+      "pg": "^8.4.0",
+      "prisma": "^3.11.0",
+      "reflect-metadata": "^0.1.13",
+      "ts-node": "^10.5.0",
+      "typeorm": "0.3.10",
+      "typescript": "^4.5.5"
+   }
 }

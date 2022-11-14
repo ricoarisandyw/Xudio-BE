@@ -1,20 +1,9 @@
-# How to Install
+# Migration Instruction
+yarn db-generate
+yarn db-run
 
-## yarn install
+# Update DB
 
-# FROM DB TO CODE
-
-## npx prisma db pull
-
-# FROM CODE TO DB
-
-## npx prisma generate
-
-## npx prisma migrate dev
-
-# FROM CODE TO DB
-
-# TODO API : 
 
 1. Login :
 {"id", "isSuccess", "token"}

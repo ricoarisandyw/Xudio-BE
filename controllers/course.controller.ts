@@ -1,19 +1,14 @@
-import { PrismaClient } from ".prisma/client";
 import { RequestHandler } from "express";
+import { ICourse } from "../src/entity/ICourse";
+import IUserInCourse from "../src/entity/IUserInCourse";
 import { getIdFromJWT } from "../utils/jwt-util";
 import { failed, success } from "../utils/response-builder";
-
-const prisma = new PrismaClient();
 
 export default class CourseController {
     static deleteCourse: RequestHandler = async (req, res) => {
         const { idCourse } = req.params;
         try {
-            await prisma.course.delete({
-                where: {
-                    id: +idCourse
-                }
-            });
+            new ICourse()
             return res.json(success("Sucess", { message: "Course deleted" }));
         } catch (error) {
             return res.json(failed("Failed", { message: "Error deleting course" }));
@@ -21,7 +16,8 @@ export default class CourseController {
     }
 
     static getCourse: RequestHandler = async (req, res) => {
-        const course = await prisma.course.findFirst({
+        console.log(req.params.idCourse)
+        const course = await ICourse.findOne({
             where: {
                 id: +req.params.idCourse
             }
@@ -30,32 +26,29 @@ export default class CourseController {
     }
 
     static getAllCourse: RequestHandler = async (req, res) => {
-        const courses = await prisma.course.findMany()
+        const courses = await ICourse.find()
         res.send(success("Successfully get all course", courses))
     }
 
     static startCourse: RequestHandler = async (req, res) => {
         const authorization = req.headers.authorization || ""
-        const iduser = getIdFromJWT(authorization.replace('Bearer ', ''))
+        const idUser = getIdFromJWT(authorization.replace('Bearer ', ''))
         const { idCourse } = req.params
 
         // check existing
-        const userInCourse = await prisma.user_in_course.findFirst({
-            where: {
-                iduser: +iduser,
-                idcourse: +idCourse
-            }
-        })
+        const userInCourse = await IUserInCourse.findOneBy({
+                idUser: +idUser,
+                idCourse: +idCourse
+            })
         if (userInCourse) {
             res.send(failed("Failed to start course", { message: "User already in course" }))
         } else {
-            const createResponse = await prisma.user_in_course.create({
-                data: {
-                    iduser: +iduser,
-                    idcourse: +idCourse,
-                    startcourse: new Date(),
-                }
-            })
+            const createResponse = await IUserInCourse.create({
+                    idUser: +idUser,
+                    idCourse: +idCourse,
+                    startCourse: new Date(),
+                    score: 0,
+                }).save()
 
             res.send(success("Start Course", createResponse));
         }
@@ -66,24 +59,24 @@ export default class CourseController {
         const iduser = getIdFromJWT(authorization.replace('Bearer ', ''))
         const { score } = req.body
 
-        const userInCourse = await prisma.user_in_course.findFirst({
+        const userInCourse = await IUserInCourse.findOne({
             where: {
-                iduser: +iduser,
-                idcourse: +req.params.idCourse
+                idUser: +iduser,
+                idCourse: +req.params.idCourse
             }
         })
         console.log("User in Course", userInCourse)
-        const updateResult = await prisma.user_in_course.update({
-            where: {
-                id: userInCourse?.id
-            },
-            data: {
-                score: +score,
-                endcourse: new Date()
-            }
-        })
 
-        res.send(success("End Course", updateResult));
+        if(userInCourse && userInCourse.id){
+            const updateResult = await IUserInCourse.update(userInCourse?.id,{
+                score: +score,
+                endCourse: new Date()
+            })
+
+            res.send(success("End Course", updateResult));
+        } else {
+            res.send(failed("user not found"))
+        }
     }
 
     static upload: RequestHandler = (req, res) => {
@@ -99,22 +92,14 @@ export default class CourseController {
         console.log("Payload", payload)
         try {
             if (payload.id) {
-                const result = await prisma.course.update({
-                    where: {
-                        id: payload.id
-                    },
-                    data: {
-                        ...payload
-                    }
+                const result = await ICourse.update(payload.id, {
+                    ...payload
                 })
                 res.send(success("Successfully update course", result))
             } else {
-                const result = await prisma.course.create({
-                    data: {
-                        ...payload,
-                        createdat: new Date().toISOString(),
-                    }
-                })
+                const result = await ICourse.create({
+                    ...payload
+                }).save()
                 res.send(success('Create course', result))
             }
         } catch (error: any) {

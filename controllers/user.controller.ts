@@ -1,10 +1,11 @@
-import { RequestHandler } from "express";
-import { failed, success } from "../utils/response-builder";
-import bcrypt from 'bcrypt';
-import { generateAccessToken, getIdFromJWT, logoutJWT } from "../utils/jwt-util";
 import { PrismaClient } from ".prisma/client";
-import { encrypt, checkEncrypt } from "../utils/encrypt";
+import bcrypt from 'bcrypt';
+import { RequestHandler } from "express";
+import IUser from "../src/entity/IUser";
+import { checkEncrypt, encrypt } from "../utils/encrypt";
 import { convertNullToEmptyString } from "../utils/json.util";
+import { generateAccessToken, getIdFromJWT, logoutJWT } from "../utils/jwt-util";
+import { failed, success } from "../utils/response-builder";
 const prisma = new PrismaClient();
 
 export default class UserController {
@@ -112,30 +113,17 @@ export default class UserController {
     }
 
     static signup: RequestHandler = async (req, res) => {
-        try {
-            const exist = await prisma.user.findFirst({
-                where: {
-                    username: req.body.username
-                }
-            });
-            if (!exist) {
-                const user = await prisma.user.create({
-                    data: {
-                        username: req.body.username,
-                        password: await encrypt(req.body.password),
-                    }
-                })
-                await prisma.user_detail.create({
-                    data: {
-                        idUser: user.id,
-                    }
-                })
-                res.send({ message: "User successfully registered" });
-            } else {
-                res.send({ message: "Username already exist" });
-            }
-        } catch (e: any) {
-            res.send({ message: e.message }).status(500)
+        const exist = await IUser.findOneBy({
+            username: req.body.username
+        })
+        if (!exist) {
+            const user = new IUser()
+            user.username = req.body.username
+            user.password = await encrypt(req.body.password)
+            const saved = await user.save()
+            res.send({ message: "User successfully registered", data: saved });
+        } else {
+            res.send({ message: "Username already exist" });
         }
     }
 
@@ -268,10 +256,8 @@ export default class UserController {
     }
 
     static login: RequestHandler = async (req, res) => {
-        const user = await prisma.user.findFirst({
-            where: {
-                username: req.body.username
-            }
+        const user = await IUser.findOneBy({
+            username: req.body.username
         })
         if (user && user.password && await checkEncrypt(req.body.password, user.password)) {
             const token = generateAccessToken({ id: user.id })
@@ -282,7 +268,7 @@ export default class UserController {
                 "token": token
             }));
         } else {
-            res.send(failed('Something wrong', {
+            res.status(500).send(failed('Something wrong', {
                 "message": "please check your username and password"
             }))
         }

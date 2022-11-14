@@ -1,7 +1,9 @@
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import express from 'express';
+import { ErrorMiddleware } from './middleware/error.middleware';
 import router from './routes';
-import cookieParser from 'cookie-parser'
-import cors from 'cors'
+import { AppDataSource } from './src/data-source';
 
 const app = express();
 const PORT = process.env.PORT || 80;
@@ -13,7 +15,13 @@ app.use(cors());
 
 // app.get('/', (req,res) => res.send('Express + TypeScript Server'));
 
-app.use('/api', router);
+AppDataSource.initialize().then(() => {
+  console.error("Connected to DB")
+  app.use('/api' , ErrorMiddleware, router);
+}).catch((error) => {
+  console.error(error)
+  console.error("Failed to interact with DB")
+})
 
 app.listen(+PORT, '0.0.0.0', 0, () => {
   console.log(`⚡️[server]: Server is running at https://localhost:${PORT}`);

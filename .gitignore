@@ -1,11 +1,7 @@
-/node_modules
-npm-debug.log
-.DS_Store
-/*.env
-
-// avoid compiled code
-*.js
-
-// avoid db from sqlite
-*.db
-*.db-journal
+.idea/
+.vscode/
+node_modules/
+build/
+tmp/
+temp/
+.env

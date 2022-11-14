@@ -1,6 +1,7 @@
 import { PrismaClient } from ".prisma/client";
 import { RequestHandler } from "express";
-import { parse } from "path";
+import { In } from "typeorm";
+import IRoom from "../src/entity/IRoom";
 import { success } from "../utils/response-builder";
 
 const prisma = new PrismaClient();
@@ -10,11 +11,9 @@ export default class RoomController {
         const { id } = req.params
 
         
-        const room = await prisma.room.findFirst({
-            where: {
+        const room = await IRoom.findOneBy({
                 id: +id
-            }
-        })
+            })
 
         const userInRoom = await prisma.user_in_room.findMany({
             where: {
@@ -74,12 +73,14 @@ export default class RoomController {
             }
         })
 
-        const rooms = await prisma.room.findMany({
-            where: {
-                id: {
-                    in: result.map((r) => r.idRoom || 0)
-                }
-            }
+        // AppDataSource.getRepository(IRoom)
+        //     .find({
+        //         where: {
+        //             id: In([])
+        //         }
+        //     })
+        const rooms = await IRoom.findBy({
+            id: In(result.map((r) => r.idRoom || 0))
         })
 
         // {"id", "name", "capacity", "filled", "createdAt", "updatedAt","image"}
@@ -100,8 +101,7 @@ export default class RoomController {
     static create: RequestHandler = async (req, res) => {
         const payload = req.body
 
-        const result = await prisma.room.create({
-            data: {
+        const result = await IRoom.create({
                 createdAt: new Date().toISOString(),
                 name: payload.name,
                 capacity: +payload.capacity,
@@ -109,13 +109,12 @@ export default class RoomController {
                 adminRoom: +payload.adminRoom,
                 image: payload.image,
                 status: payload.status
-            }
-        })
+            }).save()
         res.send(success("Successfully create room", result))
     }
 
     static getAll: RequestHandler = async (req, res) => {
-        const result = await prisma.room.findMany();
+        const result = await IRoom.find();
         
         res.send(success("Successfully get all room", result))
     }
