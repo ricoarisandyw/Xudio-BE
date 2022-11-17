@@ -1,0 +1,21 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const auth_middleware_1 = require("../middleware/auth.middleware");
+const course_routes_1 = __importDefault(require("./course.routes"));
+const score_routes_1 = __importDefault(require("./score.routes"));
+const user_routes_1 = __importDefault(require("./user.routes"));
+const room_routes_1 = __importDefault(require("./room.routes"));
+const video_routes_1 = __importDefault(require("./video.routes"));
+const dashboard_routes_1 = __importDefault(require("./dashboard.routes"));
+const router = express_1.default.Router();
+router.use("/user", user_routes_1.default);
+router.use("/score", auth_middleware_1.AuthMiddleware, score_routes_1.default);
+router.use("/course", auth_middleware_1.AuthMiddleware, course_routes_1.default);
+router.use("/room", auth_middleware_1.AuthMiddleware, room_routes_1.default);
+router.use("/video", auth_middleware_1.AuthMiddleware, video_routes_1.default);
+router.use("/dashboard", auth_middleware_1.AuthMiddleware, dashboard_routes_1.default);
+exports.default = router;
