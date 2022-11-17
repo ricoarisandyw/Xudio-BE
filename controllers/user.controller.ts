@@ -1,12 +1,15 @@
-import { PrismaClient } from ".prisma/client";
 import bcrypt from 'bcrypt';
 import { RequestHandler } from "express";
+import { In } from 'typeorm';
+import IRoom from '../src/entity/IRoom';
 import IUser from "../src/entity/IUser";
+import IUserDetail from '../src/entity/IUserDetail';
+import IUserInCourse from '../src/entity/IUserInCourse';
+import { IUserInRoom } from '../src/entity/IUserInRoom';
 import { checkEncrypt, encrypt } from "../utils/encrypt";
 import { convertNullToEmptyString } from "../utils/json.util";
 import { generateAccessToken, getIdFromJWT, logoutJWT } from "../utils/jwt-util";
 import { failed, success } from "../utils/response-builder";
-const prisma = new PrismaClient();
 
 export default class UserController {
     static getUserRoom: RequestHandler = async (req, res) => {
@@ -15,18 +18,12 @@ export default class UserController {
                 let encryptedPassword = ''
                 const id = getIdFromJWT(req.headers.authorization.replace('Bearer ', ''))
 
-                const result = await prisma.user_in_room.findMany({
-                    where: {
-                        idUser: +id
-                    }
+                const result = await IUserInRoom.findBy({
+                    idUser: +id
                 })
 
-                const rooms = await prisma.room.findMany({
-                    where: {
-                        id: {
-                            in: result.map((r) => r.idRoom || 0)
-                        }
-                    }
+                const rooms = await IRoom.findBy({
+                    id: In(result.map((r) => r.idRoom || 0))
                 })
 
                 // {"id", "name", "capacity", "filled", "createdAt", "updatedAt","image"}
@@ -56,7 +53,7 @@ export default class UserController {
                 let encryptedPassword = ''
                 const id = getIdFromJWT(req.headers.authorization.replace('Bearer ', ''))
                 const { oldPassword, newPassword } = req.body;
-                const user = await prisma.user.findFirst({
+                const user = await IUser.findOne({
                     where: {
                         id: +id
                     }
@@ -71,14 +68,14 @@ export default class UserController {
                     }
                     encryptedPassword = await encrypt(newPassword);
                 }
-                const updatedUser = await prisma.user.update({
-                    where: {
+                const updatedUser = await IUser.findOneBy({
                         id: +id
-                    },
-                    data: {
-                        password: encryptedPassword
-                    }
-                });
+                    });
+                if(updatedUser){
+                    updatedUser.password = encryptedPassword
+                    updatedUser.save()
+                }
+
                 res.send(success("Successfully update password", updatedUser));
             } else {
                 res.send(failed('Authorization not found', {}));
@@ -91,9 +88,9 @@ export default class UserController {
     static getAll: RequestHandler = async (req, res) => {
         console.log("GET ALL")
         try {
-            const users = await prisma.user.findMany();
+            const users = await IUser.find();
             const userWithDetail = await Promise.all(users.map(async (user) => {
-                const detail = await prisma.user_detail.findFirst({
+                const detail = await IUserDetail.findOne({
                     where: {
                         idUser: user.id
                     }
@@ -142,29 +139,24 @@ export default class UserController {
         const iduser = getIdFromJWT(jwt);
 
         try {
-            const existing = await prisma.user_detail.findFirst({
+            const existing = await IUserDetail.findOne({
                 where: {
                     idUser: +iduser
                 }
             })
             console.log("Existing", existing, iduser, payload)
             if (existing) {
-                const updated = await prisma.user_detail.updateMany({
+                const updated = await IUserDetail.find({
                     where: {
                         idUser: +iduser
-                    },
-                    data: {
-                        ...payload
                     }
                 })
                 res.send(success("Successfully update user detail", updated))
             } else {
-                await prisma.user_detail.create({
-                    data: {
+                await IUserDetail.create({
                         ...payload,
                         iduser: +iduser
-                    },
-                })
+                    })
                 res.send(success("Successfully create user detail", {
                     payload
                 }))
@@ -180,7 +172,7 @@ export default class UserController {
         try {
             if (jwt) {
                 const iduser = getIdFromJWT(jwt.replace("Bearer ", ""));
-                const user_detail = await prisma.user_detail.findFirst({
+                const user_detail = await IUserDetail.findOne({
                     where: {
                         idUser: +iduser
                     }
@@ -214,23 +206,23 @@ export default class UserController {
             if (jwt) {
                 // {"id", "email", "image", "name", "nip", "role"=["ADMIN","USER"], "completedCourse", "totalCourse", "averageScore", "roomJoined"="1234"}
                 const iduser = getIdFromJWT(jwt.replace("Bearer ", ""));
-                const user = await prisma.user.findFirst({
+                const user = await IUser.findOne({
                     where: {
                         id: +iduser
                     }
                 })
                 console.log({ user })
 
-                const user_detail = await prisma.user_detail.findFirst({
+                const user_detail = await IUserDetail.findOne({
                     where: {
                         idUser: +iduser
                     }
                 })
                 console.log({ user_detail })
 
-                const courses = await prisma.user_in_course.findMany({
+                const courses = await IUserInCourse.find({
                     where: {
-                        iduser: +iduser
+                        idUser: +iduser
                     }
                 })
                 console.log({ courses })

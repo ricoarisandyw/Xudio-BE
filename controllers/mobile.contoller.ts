@@ -1,8 +1,4 @@
-import { PrismaClient } from ".prisma/client";
-import { Request, RequestHandler, Response } from "express";
-import { success } from "../utils/response-builder";
-
-const prisma = new PrismaClient();
+import { Request, Response } from "express";
 
 export default class MobileController {
     // {"id", "isSuccess", "token"}

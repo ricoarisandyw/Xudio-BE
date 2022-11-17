@@ -1,11 +1,9 @@
-import { PrismaClient } from ".prisma/client";
 import { RequestHandler } from "express";
 import { ICourse } from "../src/entity/ICourse";
 import IRoom from "../src/entity/IRoom";
 import IUser from "../src/entity/IUser";
 import { success } from "../utils/response-builder";
 
-const prisma = new PrismaClient()
 export default class DashboardController {
     static getActiveRoom = () => {
         return IRoom.countBy({

@@ -1,9 +1,7 @@
-import { PrismaClient } from ".prisma/client";
 import { RequestHandler } from "express";
 import IVideo from "../src/entity/IVideo";
 import { success } from "../utils/response-builder";
 
-const prisma = new PrismaClient()
 export default class VideoController {
     static create: RequestHandler = async (req, res) => {
         const payload = req.body

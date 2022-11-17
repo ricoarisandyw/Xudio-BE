@@ -1,10 +1,9 @@
-import { PrismaClient } from ".prisma/client";
 import { RequestHandler } from "express";
 import { In } from "typeorm";
 import IRoom from "../src/entity/IRoom";
+import IUserDetail from "../src/entity/IUserDetail";
+import { IUserInRoom } from "../src/entity/IUserInRoom";
 import { success } from "../utils/response-builder";
-
-const prisma = new PrismaClient();
 
 export default class RoomController {
     static getDetail: RequestHandler = async (req, res) => {
@@ -15,17 +14,13 @@ export default class RoomController {
                 id: +id
             })
 
-        const userInRoom = await prisma.user_in_room.findMany({
-            where: {
-                idRoom: +id
-            }
+        const userInRoom = await IUserInRoom.findBy({
+            idRoom: +id
         })
 
-        const users = await prisma.user_detail.findMany({
+        const users = await IUserDetail.find({
             where : {
-                idUser: {
-                    in: userInRoom.map((v) => v.idUser || 0)
-                }
+                idUser: In(userInRoom.map((v) => v.idUser || 0))
             }
         })
         console.log({ users })
@@ -58,8 +53,8 @@ export default class RoomController {
     static join: RequestHandler = async (req, res) => {
         const payload = req.body
 
-        const result = await prisma.user_in_room.create({
-            data: payload
+        const result = await IUserInRoom.create({
+            ...payload
         })
         res.send(success("Successfully join room", result))
     }
@@ -67,9 +62,9 @@ export default class RoomController {
     static getAllUser: RequestHandler = async (req, res) => {
         const { idRoom } = req.params
 
-        const result = await prisma.user_in_room.findMany({
+        const result = await IUserInRoom.find({
             where: {
-                idRoom: +idRoom
+                idRoom: In([idRoom])
             }
         })
 
