@@ -13,11 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-const client_1 = require(".prisma/client");
 const typeorm_1 = require("typeorm");
 const IRoom_1 = __importDefault(require("../src/entity/IRoom"));
+const IUserDetail_1 = __importDefault(require("../src/entity/IUserDetail"));
+const IUserInRoom_1 = require("../src/entity/IUserInRoom");
 const response_builder_1 = require("../utils/response-builder");
-const prisma = new client_1.PrismaClient();
 class RoomController {
 }
 exports.default = RoomController;
@@ -27,16 +27,12 @@ RoomController.getDetail = (req, res) => __awaiter(void 0, void 0, void 0, funct
     const room = yield IRoom_1.default.findOneBy({
         id: +id
     });
-    const userInRoom = yield prisma.user_in_room.findMany({
-        where: {
-            idRoom: +id
-        }
+    const userInRoom = yield IUserInRoom_1.IUserInRoom.findBy({
+        idRoom: +id
     });
-    const users = yield prisma.user_detail.findMany({
+    const users = yield IUserDetail_1.default.find({
         where: {
-            idUser: {
-                in: userInRoom.map((v) => v.idUser || 0)
-            }
+            idUser: (0, typeorm_1.In)(userInRoom.map((v) => v.idUser || 0))
         }
     });
     console.log({ users });
@@ -64,16 +60,14 @@ RoomController.getDetail = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 RoomController.join = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const payload = req.body;
-    const result = yield prisma.user_in_room.create({
-        data: payload
-    });
+    const result = yield IUserInRoom_1.IUserInRoom.create(Object.assign({}, payload));
     res.send((0, response_builder_1.success)("Successfully join room", result));
 });
 RoomController.getAllUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { idRoom } = req.params;
-    const result = yield prisma.user_in_room.findMany({
+    const result = yield IUserInRoom_1.IUserInRoom.find({
         where: {
-            idRoom: +idRoom
+            idRoom: (0, typeorm_1.In)([idRoom])
         }
     });
     // AppDataSource.getRepository(IRoom)

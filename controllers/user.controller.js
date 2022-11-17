@@ -13,14 +13,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-const client_1 = require(".prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const typeorm_1 = require("typeorm");
+const IRoom_1 = __importDefault(require("../src/entity/IRoom"));
 const IUser_1 = __importDefault(require("../src/entity/IUser"));
+const IUserDetail_1 = __importDefault(require("../src/entity/IUserDetail"));
+const IUserInCourse_1 = __importDefault(require("../src/entity/IUserInCourse"));
+const IUserInRoom_1 = require("../src/entity/IUserInRoom");
 const encrypt_1 = require("../utils/encrypt");
 const json_util_1 = require("../utils/json.util");
 const jwt_util_1 = require("../utils/jwt-util");
 const response_builder_1 = require("../utils/response-builder");
-const prisma = new client_1.PrismaClient();
 class UserController {
 }
 exports.default = UserController;
@@ -30,17 +33,11 @@ UserController.getUserRoom = (req, res) => __awaiter(void 0, void 0, void 0, fun
         if (req.headers.authorization) {
             let encryptedPassword = '';
             const id = (0, jwt_util_1.getIdFromJWT)(req.headers.authorization.replace('Bearer ', ''));
-            const result = yield prisma.user_in_room.findMany({
-                where: {
-                    idUser: +id
-                }
+            const result = yield IUserInRoom_1.IUserInRoom.findBy({
+                idUser: +id
             });
-            const rooms = yield prisma.room.findMany({
-                where: {
-                    id: {
-                        in: result.map((r) => r.idRoom || 0)
-                    }
-                }
+            const rooms = yield IRoom_1.default.findBy({
+                id: (0, typeorm_1.In)(result.map((r) => r.idRoom || 0))
             });
             // {"id", "name", "capacity", "filled", "createdAt", "updatedAt","image"}
             // parse
@@ -69,7 +66,7 @@ UserController.updateUser = (req, res) => __awaiter(void 0, void 0, void 0, func
             let encryptedPassword = '';
             const id = (0, jwt_util_1.getIdFromJWT)(req.headers.authorization.replace('Bearer ', ''));
             const { oldPassword, newPassword } = req.body;
-            const user = yield prisma.user.findFirst({
+            const user = yield IUser_1.default.findOne({
                 where: {
                     id: +id
                 }
@@ -84,14 +81,13 @@ UserController.updateUser = (req, res) => __awaiter(void 0, void 0, void 0, func
                 }
                 encryptedPassword = yield (0, encrypt_1.encrypt)(newPassword);
             }
-            const updatedUser = yield prisma.user.update({
-                where: {
-                    id: +id
-                },
-                data: {
-                    password: encryptedPassword
-                }
+            const updatedUser = yield IUser_1.default.findOneBy({
+                id: +id
             });
+            if (updatedUser) {
+                updatedUser.password = encryptedPassword;
+                updatedUser.save();
+            }
             res.send((0, response_builder_1.success)("Successfully update password", updatedUser));
         }
         else {
@@ -105,9 +101,9 @@ UserController.updateUser = (req, res) => __awaiter(void 0, void 0, void 0, func
 UserController.getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("GET ALL");
     try {
-        const users = yield prisma.user.findMany();
+        const users = yield IUser_1.default.find();
         const userWithDetail = yield Promise.all(users.map((user) => __awaiter(void 0, void 0, void 0, function* () {
-            const detail = yield prisma.user_detail.findFirst({
+            const detail = yield IUserDetail_1.default.findOne({
                 where: {
                     idUser: user.id
                 }
@@ -148,25 +144,22 @@ UserController.createOrUpdateUserDetail = (req, res) => __awaiter(void 0, void 0
     const jwt = req.cookies.jwt;
     const iduser = (0, jwt_util_1.getIdFromJWT)(jwt);
     try {
-        const existing = yield prisma.user_detail.findFirst({
+        const existing = yield IUserDetail_1.default.findOne({
             where: {
                 idUser: +iduser
             }
         });
         console.log("Existing", existing, iduser, payload);
         if (existing) {
-            const updated = yield prisma.user_detail.updateMany({
+            const updated = yield IUserDetail_1.default.find({
                 where: {
                     idUser: +iduser
-                },
-                data: Object.assign({}, payload)
+                }
             });
             res.send((0, response_builder_1.success)("Successfully update user detail", updated));
         }
         else {
-            yield prisma.user_detail.create({
-                data: Object.assign(Object.assign({}, payload), { iduser: +iduser }),
-            });
+            yield IUserDetail_1.default.create(Object.assign(Object.assign({}, payload), { iduser: +iduser }));
             res.send((0, response_builder_1.success)("Successfully create user detail", {
                 payload
             }));
@@ -182,7 +175,7 @@ UserController.getUser = (req, res) => __awaiter(void 0, void 0, void 0, functio
     try {
         if (jwt) {
             const iduser = (0, jwt_util_1.getIdFromJWT)(jwt.replace("Bearer ", ""));
-            const user_detail = yield prisma.user_detail.findFirst({
+            const user_detail = yield IUserDetail_1.default.findOne({
                 where: {
                     idUser: +iduser
                 }
@@ -214,21 +207,21 @@ UserController.getSummary = (req, res) => __awaiter(void 0, void 0, void 0, func
         if (jwt) {
             // {"id", "email", "image", "name", "nip", "role"=["ADMIN","USER"], "completedCourse", "totalCourse", "averageScore", "roomJoined"="1234"}
             const iduser = (0, jwt_util_1.getIdFromJWT)(jwt.replace("Bearer ", ""));
-            const user = yield prisma.user.findFirst({
+            const user = yield IUser_1.default.findOne({
                 where: {
                     id: +iduser
                 }
             });
             console.log({ user });
-            const user_detail = yield prisma.user_detail.findFirst({
+            const user_detail = yield IUserDetail_1.default.findOne({
                 where: {
                     idUser: +iduser
                 }
             });
             console.log({ user_detail });
-            const courses = yield prisma.user_in_course.findMany({
+            const courses = yield IUserInCourse_1.default.find({
                 where: {
-                    iduser: +iduser
+                    idUser: +iduser
                 }
             });
             console.log({ courses });

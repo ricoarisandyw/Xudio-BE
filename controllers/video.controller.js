@@ -13,10 +13,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-const client_1 = require(".prisma/client");
 const IVideo_1 = __importDefault(require("../src/entity/IVideo"));
 const response_builder_1 = require("../utils/response-builder");
-const prisma = new client_1.PrismaClient();
 class VideoController {
 }
 exports.default = VideoController;

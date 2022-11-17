@@ -13,12 +13,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-const client_1 = require(".prisma/client");
 const ICourse_1 = require("../src/entity/ICourse");
 const IRoom_1 = __importDefault(require("../src/entity/IRoom"));
 const IUser_1 = __importDefault(require("../src/entity/IUser"));
 const response_builder_1 = require("../utils/response-builder");
-const prisma = new client_1.PrismaClient();
 class DashboardController {
 }
 exports.default = DashboardController;
