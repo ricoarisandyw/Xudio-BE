@@ -5,11 +5,10 @@
    "main": "index.js",
    "scripts": {
       "test": "echo \"Error: no test specified\" && exit 1",
-      "start": "pm2 start `npm run start`",
+      "start": "pm2 start `node index.js`",
       "dev": "nodemon index.ts",
       "update-db": "prisma db pull && prisma generate",
       "build": "tsc && cp package.json build",
-      "postinstall": "npm run build",
       "lint": "tslint -c tslint.json -p tsconfig.json",
       "db-generate": "typeorm-ts-node-esm migration:generate src/migrations/migration -d src/data-source.ts",
       "db-sync": "typeorm-ts-node-esm schema:sync -d src/data-source.ts",
