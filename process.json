@@ -1,0 +1,12 @@
+{
+    "apps": [{
+        "name" : "nodepm2",
+        "script" : "npm run start",
+        "env" : {
+            "PORT" : 3000
+        },
+        "env_production" : {
+            "PORT" : 3000
+        }
+    }]
+}

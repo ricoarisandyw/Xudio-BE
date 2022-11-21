@@ -1,12 +1,16 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import * as dotenv from 'dotenv';
 import express from 'express';
 import { ErrorMiddleware } from './middleware/error.middleware';
 import router from './routes';
 import { AppDataSource } from './src/data-source';
 
+// SETUP ENV
+dotenv.config()
+
 const app = express();
-const PORT = process.env.PORT || 80;
+const PORT = process.env.PORT || 3000;
 
 // LIBRARY
 app.use(express.json());

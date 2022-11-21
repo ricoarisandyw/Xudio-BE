@@ -1,13 +1,13 @@
 import bcrypt from 'bcrypt';
 import { RequestHandler } from "express";
 import { In } from 'typeorm';
+import { AppDataSource } from '../src/data-source';
 import IRoom from '../src/entity/IRoom';
 import IUser from "../src/entity/IUser";
 import IUserDetail from '../src/entity/IUserDetail';
 import IUserInCourse from '../src/entity/IUserInCourse';
 import { IUserInRoom } from '../src/entity/IUserInRoom';
 import { checkEncrypt, encrypt } from "../utils/encrypt";
-import { convertNullToEmptyString } from "../utils/json.util";
 import { generateAccessToken, getIdFromJWT, logoutJWT } from "../utils/jwt-util";
 import { failed, success } from "../utils/response-builder";
 
@@ -86,27 +86,30 @@ export default class UserController {
     }
 
     static getAll: RequestHandler = async (req, res) => {
-        console.log("GET ALL")
-        try {
-            const users = await IUser.find();
-            const userWithDetail = await Promise.all(users.map(async (user) => {
-                const detail = await IUserDetail.findOne({
-                    where: {
-                        idUser: user.id
-                    }
-                });
-                return convertNullToEmptyString({
-                    ...user,
-                    password: "",
-                    status: "active",
-                    detail: detail ? detail : {}
-                })
-            }))
+        const details = await IUserDetail.find()
+        res.send(details)
+        
+        // console.log("GET ALL")
+        // try {
+        //     const users = await IUser.find();
+        //     const userWithDetail = await Promise.all(users.map(async (user) => {
+        //         const detail = await IUserDetail.findOne({
+        //             where: {
+        //                 idUser: user.id
+        //             }
+        //         });
+        //         return convertNullToEmptyString({
+        //             ...user,
+        //             password: "",
+        //             status: "active",
+        //             detail: detail
+        //         })
+        //     }))
 
-            res.send(success("Successfully get all users", userWithDetail));
-        } catch (error) {
-            res.send(failed("Failed to get all users", error));
-        }
+        //     res.send(success("Successfully get all users", userWithDetail));
+        // } catch (error) {
+        //     res.send(failed("Failed to get all users", error));
+        // }
     }
 
     static signup: RequestHandler = async (req, res) => {
@@ -144,19 +147,19 @@ export default class UserController {
                     idUser: +iduser
                 }
             })
+
+            console.log({existing})
             console.log("Existing", existing, iduser, payload)
             if (existing) {
-                const updated = await IUserDetail.find({
-                    where: {
-                        idUser: +iduser
-                    }
-                })
+                const updated = await IUserDetail.update({
+                    idUser: +iduser
+                }, payload)
                 res.send(success("Successfully update user detail", updated))
             } else {
-                await IUserDetail.create({
-                        ...payload,
-                        iduser: +iduser
-                    })
+                await AppDataSource.manager.create(IUserDetail, {
+                    ...payload,
+                    idUser: +iduser
+                }).save()
                 res.send(success("Successfully create user detail", {
                     payload
                 }))

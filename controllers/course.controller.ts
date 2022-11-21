@@ -5,6 +5,33 @@ import { getIdFromJWT } from "../utils/jwt-util";
 import { failed, success } from "../utils/response-builder";
 
 export default class CourseController {
+    static joinCourse:RequestHandler = async (req, res) => {
+        const { idCourse } = req.params
+        const { idUser } = req.body
+
+        try {
+            // prevent join again
+            const existing = await IUserInCourse.findOneBy({
+                idUser: idUser,
+                idCourse: +idCourse
+            })
+            
+            if(existing) {
+                return res.json(failed("User already join this course"))
+            } else {
+                const newData = new IUserInCourse()
+                newData.idCourse = +idCourse
+                newData.idUser = +idUser
+                newData.score = 0
+                const result = await newData.save()
+                return res.json(success("Successfully join course", result))
+            }
+        } catch (e){
+            console.log({e})
+            return res.json(failed("Failed", { message: "Failed to join course, " + e }))
+        }
+    }
+
     static deleteCourse: RequestHandler = async (req, res) => {
         const { idCourse } = req.params;
         try {
@@ -25,6 +52,16 @@ export default class CourseController {
         res.send(success("Successfully get course", course))
     }
 
+    static getUsersInCourse: RequestHandler = async (req, res) => {
+        const all = await IUserInCourse.find();
+        console.log({all})
+
+        const course = await IUserInCourse.findBy({
+            idCourse: +req.params.idCourse
+        })
+        res.send(success("Successfully get course", course))
+    }
+
     static getAllCourse: RequestHandler = async (req, res) => {
         const courses = await ICourse.find()
         res.send(success("Successfully get all course", courses))
@@ -35,47 +72,38 @@ export default class CourseController {
         const idUser = getIdFromJWT(authorization.replace('Bearer ', ''))
         const { idCourse } = req.params
 
-        // check existing
-        const userInCourse = await IUserInCourse.findOneBy({
-                idUser: +idUser,
-                idCourse: +idCourse
-            })
-        if (userInCourse) {
-            res.send(failed("Failed to start course", { message: "User already in course" }))
-        } else {
-            const createResponse = await IUserInCourse.create({
-                    idUser: +idUser,
-                    idCourse: +idCourse,
-                    startCourse: new Date(),
-                    score: 0,
-                }).save()
+        const existing = await IUserInCourse.findOneBy({
+            idUser: +idUser,
+            idCourse: +idCourse
+        })
+            
+        if (existing) {
+            existing.startCourse = new Date()
+            existing.save()
 
-            res.send(success("Start Course", createResponse));
+            res.send(success("Successfully start course", existing));
+        } else {
+            res.send(failed("User not exist in that course"))
         }
     }
 
     static endCourse: RequestHandler = async (req, res) => {
         const authorization = req.headers.authorization || ""
-        const iduser = getIdFromJWT(authorization.replace('Bearer ', ''))
-        const { score } = req.body
+        const idUser = getIdFromJWT(authorization.replace('Bearer ', ''))
+        const { idCourse } = req.params
 
-        const userInCourse = await IUserInCourse.findOne({
-            where: {
-                idUser: +iduser,
-                idCourse: +req.params.idCourse
-            }
+        const existing = await IUserInCourse.findOneBy({
+            idUser: +idUser,
+            idCourse: +idCourse
         })
-        console.log("User in Course", userInCourse)
+            
+        if (existing) {
+            existing.endCourse = new Date()
+            existing.save()
 
-        if(userInCourse && userInCourse.id){
-            const updateResult = await IUserInCourse.update(userInCourse?.id,{
-                score: +score,
-                endCourse: new Date()
-            })
-
-            res.send(success("End Course", updateResult));
+            res.send(success("Successfully end course", existing));
         } else {
-            res.send(failed("user not found"))
+            res.send(failed("User not exist in that course"))
         }
     }
 
@@ -89,7 +117,7 @@ export default class CourseController {
 
     static createOrUpdate: RequestHandler = async (req, res) => {
         const payload = req.body
-        console.log("Payload", payload)
+        
         try {
             if (payload.id) {
                 const result = await ICourse.update(payload.id, {

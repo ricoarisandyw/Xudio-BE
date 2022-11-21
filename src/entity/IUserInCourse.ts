@@ -9,8 +9,8 @@ export default class IUserInCourse extends AppBaseEntity {
     idUser!: number
     @Column({ type: "int" })
     score!: number
-    @Column({ type: "timestamptz" })
+    @Column({ type: "timestamptz", nullable: true })
     startCourse!: Date
-    @Column({ type: "timestamptz" })
+    @Column({ type: "timestamptz", nullable: true })
     endCourse!: Date
 }

@@ -1,9 +1,11 @@
 import { RequestHandler } from "express";
 import { In } from "typeorm";
 import IRoom from "../src/entity/IRoom";
+import ITeacher from "../src/entity/ITeacher";
+import ITeacherInRoom from "../src/entity/ITeacherInRoom";
 import IUserDetail from "../src/entity/IUserDetail";
 import { IUserInRoom } from "../src/entity/IUserInRoom";
-import { success } from "../utils/response-builder";
+import { failed, success } from "../utils/response-builder";
 
 export default class RoomController {
     static getDetail: RequestHandler = async (req, res) => {
@@ -14,6 +16,7 @@ export default class RoomController {
                 id: +id
             })
 
+        // Get Users
         const userInRoom = await IUserInRoom.findBy({
             idRoom: +id
         })
@@ -23,10 +26,17 @@ export default class RoomController {
                 idUser: In(userInRoom.map((v) => v.idUser || 0))
             }
         })
-        console.log({ users })
+
+        // Get Teacher
+        const teacherInRoom = await ITeacherInRoom.findOneBy({
+            idRoom: +id
+        })
+
+        const teacher = await ITeacher.findOneBy({
+            id: teacherInRoom?.id
+        })
 
         // parse
-        // {"id", "name", "capacity", "filled", "createdAt", "updatedAt","image", "member(user in room)", "member image", "member id", "admin room": {"name", "nip"}}
         const parse = {
             id: room?.id,
             capacity: room?.capacity,
@@ -34,6 +44,7 @@ export default class RoomController {
             createdAt: room?.createdAt,
             updateAt: new Date(),
             image: room?.image,
+            teacher: teacher,
             members: userInRoom.map((u) => {
                 const usr = users.find((us) => us.idUser === u.idUser)
 
@@ -53,44 +64,41 @@ export default class RoomController {
     static join: RequestHandler = async (req, res) => {
         const payload = req.body
 
-        const result = await IUserInRoom.create({
-            ...payload
+        const existing = await IUserInRoom.findOneBy({
+            idRoom: payload.idRoom,
+            idUser: payload.idUser
         })
-        res.send(success("Successfully join room", result))
+
+        if(existing){
+            return res.json(failed("User already in room"))
+        } else {
+            const newData = new IUserInRoom()
+            newData.idRoom = payload.idRoom
+            newData.idUser = payload.idUser
+            const result = await newData.save()
+    
+            return res.send(success("Successfully join room", result))
+        }
     }
 
-    static getAllUser: RequestHandler = async (req, res) => {
+    static leave: RequestHandler = async (req, res) => {
+        const payload = req.body
+
+        const result = await IUserInRoom.delete({
+            ...payload
+        })
+        
+        res.send(success("Successfully leave room"))
+    }
+
+    static getAllUsersInRoom: RequestHandler = async (req, res) => {
         const { idRoom } = req.params
 
-        const result = await IUserInRoom.find({
-            where: {
-                idRoom: In([idRoom])
-            }
+        const usersInRoom = await IUserInRoom.findBy({
+            idRoom: +idRoom
         })
 
-        // AppDataSource.getRepository(IRoom)
-        //     .find({
-        //         where: {
-        //             id: In([])
-        //         }
-        //     })
-        const rooms = await IRoom.findBy({
-            id: In(result.map((r) => r.idRoom || 0))
-        })
-
-        // {"id", "name", "capacity", "filled", "createdAt", "updatedAt","image"}
-        // parse
-        const allRooms = rooms.map((r) => ({
-            id: r.id,
-            name: r.name,
-            capacity: r.capacity,
-            filled: r.filled,
-            image: "",
-            createdAt: r.createdAt,
-            updateAt: new Date()
-        }))
-
-        res.send(success("Successfully get all user in room", allRooms))
+        res.send(success("Successfully get all user in room", usersInRoom))
     }
 
     static create: RequestHandler = async (req, res) => {

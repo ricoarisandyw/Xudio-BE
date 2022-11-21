@@ -6,9 +6,7 @@ export default class VideoController {
     static create: RequestHandler = async (req, res) => {
         const payload = req.body
 
-        const result = await IVideo.create({
-            link: payload.link
-        }).save()
+        const result = await IVideo.create(payload).save()
         res.send(success("Successfully add video", result))
     }
 

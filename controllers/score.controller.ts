@@ -1,6 +1,4 @@
 import { RequestHandler } from "express";
-import { In } from "typeorm";
-import { ICourse } from "../src/entity/ICourse";
 import IUserInCourse from "../src/entity/IUserInCourse";
 import { getIdFromJWT } from "../utils/jwt-util";
 import { failed, success } from "../utils/response-builder";
@@ -9,44 +7,26 @@ export default class ScoreController {
     static getScore: RequestHandler = async (req, res) => {
         const authorization = req.headers.authorization || "";
         const iduser = getIdFromJWT(authorization.replace("Bearer ", ""));
-        const allScores = await IUserInCourse.findBy({
-                idUser: +iduser
-            });
 
-        const courses = await ICourse.find({
-            where: {
-                id: In(allScores.map(score => score.idCourse))
-            }
+        const course = await IUserInCourse.findOneBy({
+            idUser: +iduser,
+            idCourse: req.body.idCourse,
         })
 
-        // agregate
-        const scores = allScores.reduce((acc, cur) => {
-            const course = courses.find(
-                (course) => cur.idCourse === course.id
-            );
-            acc.push({
-                name: course?.name,
-                description: course?.description,
-                score: cur.score,
-                beginDate: course?.beginDate,
-                dueDate: course?.dueDate,
-                startCourse: cur.startCourse,
-                endCourse: cur.endCourse,
-            });
-            return acc;
-        }, [] as any[]);
-
-        res.send(success("Get Score", scores));
+        res.send(success("Successfully Get Score", course));
     }
 
     static addScore: RequestHandler = async (req, res) => {
         const payload = req.body
         const authorization = req.headers.authorization || ""
-        const iduser = getIdFromJWT(authorization.replace('Bearer ', ''))
+
+        // * id user is payload because admin / system who made it.
+        // const iduser = getIdFromJWT(authorization.replace('Bearer ', ''))
+
         const course = await IUserInCourse.findOne({
             where: {
-                idCourse: payload.courseID,
-                idUser: +iduser
+                idCourse: payload.idCourse,
+                idUser: payload.idUser
             }
         })
         if(course){

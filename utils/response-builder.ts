@@ -1,4 +1,4 @@
-export function success(message: string, data: any) {
+export function success(message: string, data: any = null) {
     return {
         status: "success",
         message: message,

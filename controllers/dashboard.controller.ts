@@ -5,10 +5,17 @@ import IUser from "../src/entity/IUser";
 import { success } from "../utils/response-builder";
 
 export default class DashboardController {
+    static getUserDashboard = () => {
+        return {
+            completedCourse:"",
+            averageScore:"",
+            roomJoined: "",
+            totalCourse:""
+        }
+    }
+
     static getActiveRoom = () => {
-        return IRoom.countBy({
-            status: "ACTIVE"
-        })
+        return IRoom.count()
     }
 
     static getUsers = () => {
