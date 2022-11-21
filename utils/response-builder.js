@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.failed = exports.success = void 0;
-function success(message, data) {
+function success(message, data = null) {
     return {
         status: "success",
         message: message,

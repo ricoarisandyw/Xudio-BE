@@ -10,5 +10,6 @@ roomRouter.post('/', room_controller_1.default.create);
 roomRouter.get('/', room_controller_1.default.getAll);
 roomRouter.get('/detail/:id', room_controller_1.default.getDetail);
 roomRouter.post('/join', room_controller_1.default.join);
-roomRouter.get('/:idRoom/users', room_controller_1.default.getAllUser);
+roomRouter.post('/leave', room_controller_1.default.leave);
+roomRouter.get('/:idRoom/users', room_controller_1.default.getAllUsersInRoom);
 exports.default = roomRouter;

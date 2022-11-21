@@ -21,10 +21,16 @@ class DashboardController {
 }
 exports.default = DashboardController;
 _a = DashboardController;
+DashboardController.getUserDashboard = () => {
+    return {
+        completedCourse: "",
+        averageScore: "",
+        roomJoined: "",
+        totalCourse: ""
+    };
+};
 DashboardController.getActiveRoom = () => {
-    return IRoom_1.default.countBy({
-        status: "ACTIVE"
-    });
+    return IRoom_1.default.count();
 };
 DashboardController.getUsers = () => {
     return IUser_1.default.count();

@@ -21,6 +21,32 @@ class CourseController {
 }
 exports.default = CourseController;
 _a = CourseController;
+CourseController.joinCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { idCourse } = req.params;
+    const { idUser } = req.body;
+    try {
+        // prevent join again
+        const existing = yield IUserInCourse_1.default.findOneBy({
+            idUser: idUser,
+            idCourse: +idCourse
+        });
+        if (existing) {
+            return res.json((0, response_builder_1.failed)("User already join this course"));
+        }
+        else {
+            const newData = new IUserInCourse_1.default();
+            newData.idCourse = +idCourse;
+            newData.idUser = +idUser;
+            newData.score = 0;
+            const result = yield newData.save();
+            return res.json((0, response_builder_1.success)("Successfully join course", result));
+        }
+    }
+    catch (e) {
+        console.log({ e });
+        return res.json((0, response_builder_1.failed)("Failed", { message: "Failed to join course, " + e }));
+    }
+});
 CourseController.deleteCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { idCourse } = req.params;
     try {
@@ -40,6 +66,14 @@ CourseController.getCourse = (req, res) => __awaiter(void 0, void 0, void 0, fun
     });
     res.send((0, response_builder_1.success)("Successfully get course", course));
 });
+CourseController.getUsersInCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const all = yield IUserInCourse_1.default.find();
+    console.log({ all });
+    const course = yield IUserInCourse_1.default.findBy({
+        idCourse: +req.params.idCourse
+    });
+    res.send((0, response_builder_1.success)("Successfully get course", course));
+});
 CourseController.getAllCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const courses = yield ICourse_1.ICourse.find();
     res.send((0, response_builder_1.success)("Successfully get all course", courses));
@@ -48,44 +82,34 @@ CourseController.startCourse = (req, res) => __awaiter(void 0, void 0, void 0, f
     const authorization = req.headers.authorization || "";
     const idUser = (0, jwt_util_1.getIdFromJWT)(authorization.replace('Bearer ', ''));
     const { idCourse } = req.params;
-    // check existing
-    const userInCourse = yield IUserInCourse_1.default.findOneBy({
+    const existing = yield IUserInCourse_1.default.findOneBy({
         idUser: +idUser,
         idCourse: +idCourse
     });
-    if (userInCourse) {
-        res.send((0, response_builder_1.failed)("Failed to start course", { message: "User already in course" }));
+    if (existing) {
+        existing.startCourse = new Date();
+        existing.save();
+        res.send((0, response_builder_1.success)("Successfully start course", existing));
     }
     else {
-        const createResponse = yield IUserInCourse_1.default.create({
-            idUser: +idUser,
-            idCourse: +idCourse,
-            startCourse: new Date(),
-            score: 0,
-        }).save();
-        res.send((0, response_builder_1.success)("Start Course", createResponse));
+        res.send((0, response_builder_1.failed)("User not exist in that course"));
     }
 });
 CourseController.endCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const authorization = req.headers.authorization || "";
-    const iduser = (0, jwt_util_1.getIdFromJWT)(authorization.replace('Bearer ', ''));
-    const { score } = req.body;
-    const userInCourse = yield IUserInCourse_1.default.findOne({
-        where: {
-            idUser: +iduser,
-            idCourse: +req.params.idCourse
-        }
+    const idUser = (0, jwt_util_1.getIdFromJWT)(authorization.replace('Bearer ', ''));
+    const { idCourse } = req.params;
+    const existing = yield IUserInCourse_1.default.findOneBy({
+        idUser: +idUser,
+        idCourse: +idCourse
     });
-    console.log("User in Course", userInCourse);
-    if (userInCourse && userInCourse.id) {
-        const updateResult = yield IUserInCourse_1.default.update(userInCourse === null || userInCourse === void 0 ? void 0 : userInCourse.id, {
-            score: +score,
-            endCourse: new Date()
-        });
-        res.send((0, response_builder_1.success)("End Course", updateResult));
+    if (existing) {
+        existing.endCourse = new Date();
+        existing.save();
+        res.send((0, response_builder_1.success)("Successfully end course", existing));
     }
     else {
-        res.send((0, response_builder_1.failed)("user not found"));
+        res.send((0, response_builder_1.failed)("User not exist in that course"));
     }
 });
 CourseController.upload = (req, res) => {
@@ -97,7 +121,6 @@ CourseController.upload = (req, res) => {
 };
 CourseController.createOrUpdate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const payload = req.body;
-    console.log("Payload", payload);
     try {
         if (payload.id) {
             const result = yield ICourse_1.ICourse.update(payload.id, Object.assign({}, payload));

@@ -12,23 +12,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ILesson = void 0;
 const typeorm_1 = require("typeorm");
 const AppBaseEntity_1 = __importDefault(require("./AppBaseEntity"));
-let IVideo = class IVideo extends AppBaseEntity_1.default {
+let ILesson = class ILesson extends AppBaseEntity_1.default {
 };
 __decorate([
-    (0, typeorm_1.Column)({ type: "text" }),
-    __metadata("design:type", String)
-], IVideo.prototype, "title", void 0);
+    (0, typeorm_1.Column)({ type: "int" }),
+    __metadata("design:type", Number)
+], ILesson.prototype, "idCourse", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "text" }),
+    (0, typeorm_1.Column)({ type: "string" }),
     __metadata("design:type", String)
-], IVideo.prototype, "description", void 0);
+], ILesson.prototype, "image", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "text" }),
+    (0, typeorm_1.Column)({ type: "string" }),
     __metadata("design:type", String)
-], IVideo.prototype, "link", void 0);
-IVideo = __decorate([
-    (0, typeorm_1.Entity)({ name: "video" })
-], IVideo);
-exports.default = IVideo;
+], ILesson.prototype, "title", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "string" }),
+    __metadata("design:type", String)
+], ILesson.prototype, "description", void 0);
+ILesson = __decorate([
+    (0, typeorm_1.Entity)({ name: "lesson" })
+], ILesson);
+exports.ILesson = ILesson;

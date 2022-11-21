@@ -15,13 +15,13 @@ var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const typeorm_1 = require("typeorm");
+const data_source_1 = require("../src/data-source");
 const IRoom_1 = __importDefault(require("../src/entity/IRoom"));
 const IUser_1 = __importDefault(require("../src/entity/IUser"));
 const IUserDetail_1 = __importDefault(require("../src/entity/IUserDetail"));
 const IUserInCourse_1 = __importDefault(require("../src/entity/IUserInCourse"));
 const IUserInRoom_1 = require("../src/entity/IUserInRoom");
 const encrypt_1 = require("../utils/encrypt");
-const json_util_1 = require("../utils/json.util");
 const jwt_util_1 = require("../utils/jwt-util");
 const response_builder_1 = require("../utils/response-builder");
 class UserController {
@@ -99,22 +99,28 @@ UserController.updateUser = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 UserController.getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("GET ALL");
-    try {
-        const users = yield IUser_1.default.find();
-        const userWithDetail = yield Promise.all(users.map((user) => __awaiter(void 0, void 0, void 0, function* () {
-            const detail = yield IUserDetail_1.default.findOne({
-                where: {
-                    idUser: user.id
-                }
-            });
-            return (0, json_util_1.convertNullToEmptyString)(Object.assign(Object.assign({}, user), { password: "", status: "active", detail: detail ? detail : {} }));
-        })));
-        res.send((0, response_builder_1.success)("Successfully get all users", userWithDetail));
-    }
-    catch (error) {
-        res.send((0, response_builder_1.failed)("Failed to get all users", error));
-    }
+    const details = yield IUserDetail_1.default.find();
+    res.send(details);
+    // console.log("GET ALL")
+    // try {
+    //     const users = await IUser.find();
+    //     const userWithDetail = await Promise.all(users.map(async (user) => {
+    //         const detail = await IUserDetail.findOne({
+    //             where: {
+    //                 idUser: user.id
+    //             }
+    //         });
+    //         return convertNullToEmptyString({
+    //             ...user,
+    //             password: "",
+    //             status: "active",
+    //             detail: detail
+    //         })
+    //     }))
+    //     res.send(success("Successfully get all users", userWithDetail));
+    // } catch (error) {
+    //     res.send(failed("Failed to get all users", error));
+    // }
 });
 UserController.signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const exist = yield IUser_1.default.findOneBy({
@@ -149,17 +155,16 @@ UserController.createOrUpdateUserDetail = (req, res) => __awaiter(void 0, void 0
                 idUser: +iduser
             }
         });
+        console.log({ existing });
         console.log("Existing", existing, iduser, payload);
         if (existing) {
-            const updated = yield IUserDetail_1.default.find({
-                where: {
-                    idUser: +iduser
-                }
-            });
+            const updated = yield IUserDetail_1.default.update({
+                idUser: +iduser
+            }, payload);
             res.send((0, response_builder_1.success)("Successfully update user detail", updated));
         }
         else {
-            yield IUserDetail_1.default.create(Object.assign(Object.assign({}, payload), { iduser: +iduser }));
+            yield data_source_1.AppDataSource.manager.create(IUserDetail_1.default, Object.assign(Object.assign({}, payload), { idUser: +iduser })).save();
             res.send((0, response_builder_1.success)("Successfully create user detail", {
                 payload
             }));

@@ -15,6 +15,8 @@ var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const typeorm_1 = require("typeorm");
 const IRoom_1 = __importDefault(require("../src/entity/IRoom"));
+const ITeacher_1 = __importDefault(require("../src/entity/ITeacher"));
+const ITeacherInRoom_1 = __importDefault(require("../src/entity/ITeacherInRoom"));
 const IUserDetail_1 = __importDefault(require("../src/entity/IUserDetail"));
 const IUserInRoom_1 = require("../src/entity/IUserInRoom");
 const response_builder_1 = require("../utils/response-builder");
@@ -27,6 +29,7 @@ RoomController.getDetail = (req, res) => __awaiter(void 0, void 0, void 0, funct
     const room = yield IRoom_1.default.findOneBy({
         id: +id
     });
+    // Get Users
     const userInRoom = yield IUserInRoom_1.IUserInRoom.findBy({
         idRoom: +id
     });
@@ -35,9 +38,14 @@ RoomController.getDetail = (req, res) => __awaiter(void 0, void 0, void 0, funct
             idUser: (0, typeorm_1.In)(userInRoom.map((v) => v.idUser || 0))
         }
     });
-    console.log({ users });
+    // Get Teacher
+    const teacherInRoom = yield ITeacherInRoom_1.default.findOneBy({
+        idRoom: +id
+    });
+    const teacher = yield ITeacher_1.default.findOneBy({
+        id: teacherInRoom === null || teacherInRoom === void 0 ? void 0 : teacherInRoom.id
+    });
     // parse
-    // {"id", "name", "capacity", "filled", "createdAt", "updatedAt","image", "member(user in room)", "member image", "member id", "admin room": {"name", "nip"}}
     const parse = {
         id: room === null || room === void 0 ? void 0 : room.id,
         capacity: room === null || room === void 0 ? void 0 : room.capacity,
@@ -45,6 +53,7 @@ RoomController.getDetail = (req, res) => __awaiter(void 0, void 0, void 0, funct
         createdAt: room === null || room === void 0 ? void 0 : room.createdAt,
         updateAt: new Date(),
         image: room === null || room === void 0 ? void 0 : room.image,
+        teacher: teacher,
         members: userInRoom.map((u) => {
             const usr = users.find((us) => us.idUser === u.idUser);
             return {
@@ -60,37 +69,32 @@ RoomController.getDetail = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 RoomController.join = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const payload = req.body;
-    const result = yield IUserInRoom_1.IUserInRoom.create(Object.assign({}, payload));
-    res.send((0, response_builder_1.success)("Successfully join room", result));
+    const existing = yield IUserInRoom_1.IUserInRoom.findOneBy({
+        idRoom: payload.idRoom,
+        idUser: payload.idUser
+    });
+    if (existing) {
+        return res.json((0, response_builder_1.failed)("User already in room"));
+    }
+    else {
+        const newData = new IUserInRoom_1.IUserInRoom();
+        newData.idRoom = payload.idRoom;
+        newData.idUser = payload.idUser;
+        const result = yield newData.save();
+        return res.send((0, response_builder_1.success)("Successfully join room", result));
+    }
 });
-RoomController.getAllUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+RoomController.leave = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const payload = req.body;
+    const result = yield IUserInRoom_1.IUserInRoom.delete(Object.assign({}, payload));
+    res.send((0, response_builder_1.success)("Successfully leave room"));
+});
+RoomController.getAllUsersInRoom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { idRoom } = req.params;
-    const result = yield IUserInRoom_1.IUserInRoom.find({
-        where: {
-            idRoom: (0, typeorm_1.In)([idRoom])
-        }
+    const usersInRoom = yield IUserInRoom_1.IUserInRoom.findBy({
+        idRoom: +idRoom
     });
-    // AppDataSource.getRepository(IRoom)
-    //     .find({
-    //         where: {
-    //             id: In([])
-    //         }
-    //     })
-    const rooms = yield IRoom_1.default.findBy({
-        id: (0, typeorm_1.In)(result.map((r) => r.idRoom || 0))
-    });
-    // {"id", "name", "capacity", "filled", "createdAt", "updatedAt","image"}
-    // parse
-    const allRooms = rooms.map((r) => ({
-        id: r.id,
-        name: r.name,
-        capacity: r.capacity,
-        filled: r.filled,
-        image: "",
-        createdAt: r.createdAt,
-        updateAt: new Date()
-    }));
-    res.send((0, response_builder_1.success)("Successfully get all user in room", allRooms));
+    res.send((0, response_builder_1.success)("Successfully get all user in room", usersInRoom));
 });
 RoomController.create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const payload = req.body;

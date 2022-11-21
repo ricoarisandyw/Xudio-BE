@@ -29,11 +29,11 @@ __decorate([
     __metadata("design:type", Number)
 ], IUserInCourse.prototype, "score", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "timestamptz" }),
+    (0, typeorm_1.Column)({ type: "timestamptz", nullable: true }),
     __metadata("design:type", Date)
 ], IUserInCourse.prototype, "startCourse", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "timestamptz" }),
+    (0, typeorm_1.Column)({ type: "timestamptz", nullable: true }),
     __metadata("design:type", Date)
 ], IUserInCourse.prototype, "endCourse", void 0);
 IUserInCourse = __decorate([

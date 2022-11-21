@@ -7,4 +7,5 @@ const express_1 = __importDefault(require("express"));
 const dashboard_controller_1 = __importDefault(require("../controllers/dashboard.controller"));
 const dashboardRouter = express_1.default.Router();
 dashboardRouter.get("/", dashboard_controller_1.default.getDashboard);
+dashboardRouter.get("/user", dashboard_controller_1.default.getUserDashboard);
 exports.default = dashboardRouter;

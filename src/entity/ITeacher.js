@@ -14,21 +14,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const typeorm_1 = require("typeorm");
 const AppBaseEntity_1 = __importDefault(require("./AppBaseEntity"));
-let IVideo = class IVideo extends AppBaseEntity_1.default {
+let ITeacher = class ITeacher extends AppBaseEntity_1.default {
 };
 __decorate([
-    (0, typeorm_1.Column)({ type: "text" }),
+    (0, typeorm_1.Column)({ type: "string" }),
     __metadata("design:type", String)
-], IVideo.prototype, "title", void 0);
+], ITeacher.prototype, "name", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "text" }),
+    (0, typeorm_1.Column)({ type: "string" }),
     __metadata("design:type", String)
-], IVideo.prototype, "description", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: "text" }),
-    __metadata("design:type", String)
-], IVideo.prototype, "link", void 0);
-IVideo = __decorate([
-    (0, typeorm_1.Entity)({ name: "video" })
-], IVideo);
-exports.default = IVideo;
+], ITeacher.prototype, "nip", void 0);
+ITeacher = __decorate([
+    (0, typeorm_1.Entity)({ name: "teacher" })
+], ITeacher);
+exports.default = ITeacher;

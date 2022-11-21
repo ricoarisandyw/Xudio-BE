@@ -21,9 +21,7 @@ exports.default = VideoController;
 _a = VideoController;
 VideoController.create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const payload = req.body;
-    const result = yield IVideo_1.default.create({
-        link: payload.link
-    }).save();
+    const result = yield IVideo_1.default.create(payload).save();
     res.send((0, response_builder_1.success)("Successfully add video", result));
 });
 VideoController.getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
