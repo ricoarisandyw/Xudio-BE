@@ -12,9 +12,11 @@ courseRouter.get('/:idCourse', course_controller_1.default.getCourse);
 courseRouter.post('/', course_controller_1.default.createOrUpdate);
 courseRouter.delete('/:idCourse', course_controller_1.default.deleteCourse);
 courseRouter.post('/upload', course_controller_1.default.upload);
-// COURSE x USER
+// COURSE x USER 
 courseRouter.post('/:idCourse/join', course_controller_1.default.joinCourse);
 courseRouter.get('/:idCourse/user', course_controller_1.default.getUsersInCourse);
 courseRouter.post('/:idCourse/start', course_controller_1.default.startCourse);
 courseRouter.post('/:idCourse/end', course_controller_1.default.endCourse);
+// COURSE x ROOM
+courseRouter.get('/:idCourse/room', course_controller_1.default.getRoom);
 exports.default = courseRouter;

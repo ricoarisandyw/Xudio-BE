@@ -8,20 +8,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const typeorm_1 = require("typeorm");
-class AppBaseEntity extends typeorm_1.BaseEntity {
+const AppBaseEntity_1 = __importDefault(require("./AppBaseEntity"));
+class IUserInRole extends AppBaseEntity_1.default {
 }
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)("increment"),
+    (0, typeorm_1.Column)({ type: "number" }),
     __metadata("design:type", Number)
-], AppBaseEntity.prototype, "id", void 0);
+], IUserInRole.prototype, "idUser", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "timestamptz", default: () => "CURRENT_TIMESTAMP" }),
-    __metadata("design:type", Date)
-], AppBaseEntity.prototype, "createdAt", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: "timestamptz", nullable: true }),
-    __metadata("design:type", Date)
-], AppBaseEntity.prototype, "updatedAt", void 0);
-exports.default = AppBaseEntity;
+    (0, typeorm_1.Column)({ type: "number" }),
+    __metadata("design:type", Number)
+], IUserInRole.prototype, "idRole", void 0);
+exports.default = IUserInRole;

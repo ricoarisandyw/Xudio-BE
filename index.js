@@ -26,6 +26,8 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv = __importStar(require("dotenv"));
 const express_1 = __importDefault(require("express"));
+const express_winston_1 = __importDefault(require("express-winston"));
+const winston_1 = __importDefault(require("winston"));
 const error_middleware_1 = require("./middleware/error.middleware");
 const routes_1 = __importDefault(require("./routes"));
 const data_source_1 = require("./src/data-source");
@@ -33,6 +35,18 @@ const data_source_1 = require("./src/data-source");
 dotenv.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
+// LOGGING
+app.use(express_winston_1.default.logger({
+    transports: [
+        new winston_1.default.transports.Console()
+    ],
+    format: winston_1.default.format.combine(winston_1.default.format.colorize(), winston_1.default.format.simple()),
+    meta: true,
+    msg: "HTTP {{req.method}} {{req.url}}",
+    expressFormat: true,
+    colorize: true, // Color the text and status code, using the Express/morgan color palette (text: gray, status: default green, 3XX cyan, 4XX yellow, 5XX red).
+    // ignoreRoute: function (req, res) { return false; } // optional: allows to skip some log messages based on request and/or response
+}));
 // LIBRARY
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());

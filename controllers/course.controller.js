@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const ICourse_1 = require("../src/entity/ICourse");
+const IRoom_1 = __importDefault(require("../src/entity/IRoom"));
 const IUserInCourse_1 = __importDefault(require("../src/entity/IUserInCourse"));
 const jwt_util_1 = require("../utils/jwt-util");
 const response_builder_1 = require("../utils/response-builder");
@@ -21,6 +22,18 @@ class CourseController {
 }
 exports.default = CourseController;
 _a = CourseController;
+CourseController.getRoom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { idCourse } = req.params;
+        const rooms = yield IRoom_1.default.findBy({
+            idCourse: +idCourse
+        });
+        res.send((0, response_builder_1.success)("Successfully get rooms", rooms));
+    }
+    catch (e) {
+        res.status(500).send(e);
+    }
+});
 CourseController.joinCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { idCourse } = req.params;
     const { idUser } = req.body;
@@ -64,7 +77,10 @@ CourseController.getCourse = (req, res) => __awaiter(void 0, void 0, void 0, fun
             id: +req.params.idCourse
         }
     });
-    res.send((0, response_builder_1.success)("Successfully get course", course));
+    const detailCourse = Object.assign(Object.assign({}, course), { rooms: yield IRoom_1.default.findBy({
+            idCourse: course === null || course === void 0 ? void 0 : course.id
+        }) });
+    res.send((0, response_builder_1.success)("Successfully get course", detailCourse));
 });
 CourseController.getUsersInCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const all = yield IUserInCourse_1.default.find();
@@ -76,7 +92,12 @@ CourseController.getUsersInCourse = (req, res) => __awaiter(void 0, void 0, void
 });
 CourseController.getAllCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const courses = yield ICourse_1.ICourse.find();
-    res.send((0, response_builder_1.success)("Successfully get all course", courses));
+    const mappedCourses = yield Promise.all(courses.map((course) => __awaiter(void 0, void 0, void 0, function* () {
+        return Object.assign(Object.assign({}, course), { roomSize: yield IRoom_1.default.countBy({
+                idCourse: +course.id
+            }) });
+    })));
+    res.send((0, response_builder_1.success)("Successfully get all course", mappedCourses));
 });
 CourseController.startCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const authorization = req.headers.authorization || "";

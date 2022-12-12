@@ -25,7 +25,7 @@ __decorate([
     __metadata("design:type", String)
 ], IRoom.prototype, "status", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "int" }),
+    (0, typeorm_1.Column)({ type: "int", default: "0" }),
     __metadata("design:type", Number)
 ], IRoom.prototype, "filled", void 0);
 __decorate([
@@ -33,13 +33,17 @@ __decorate([
     __metadata("design:type", Number)
 ], IRoom.prototype, "capacity", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "int" }),
+    (0, typeorm_1.Column)({ type: "int", default: "0" }),
     __metadata("design:type", Number)
 ], IRoom.prototype, "adminRoom", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: "string" }),
     __metadata("design:type", String)
 ], IRoom.prototype, "image", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "int", default: "0" }),
+    __metadata("design:type", Number)
+], IRoom.prototype, "idCourse", void 0);
 IRoom = __decorate([
     (0, typeorm_1.Entity)({ name: "room" })
 ], IRoom);

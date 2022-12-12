@@ -131,10 +131,10 @@ UserController.signup = (req, res) => __awaiter(void 0, void 0, void 0, function
         user.username = req.body.username;
         user.password = yield (0, encrypt_1.encrypt)(req.body.password);
         const saved = yield user.save();
-        res.send({ message: "User successfully registered", data: saved });
+        res.send({ status: "success", message: "User successfully registered", data: saved });
     }
     else {
-        res.send({ message: "Username already exist" });
+        res.status(500).send({ message: "Username already exist" });
     }
 });
 UserController.getPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {

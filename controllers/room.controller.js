@@ -24,6 +24,11 @@ class RoomController {
 }
 exports.default = RoomController;
 _a = RoomController;
+RoomController.deleteRoom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { idRoom } = req.params;
+    yield IRoom_1.default.createQueryBuilder().where("id = :id", { id: idRoom }).delete().execute();
+    res.send((0, response_builder_1.success)("Successfully delete room"));
+});
 RoomController.getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const room = yield IRoom_1.default.findOneBy({
@@ -97,17 +102,15 @@ RoomController.getAllUsersInRoom = (req, res) => __awaiter(void 0, void 0, void 
     res.send((0, response_builder_1.success)("Successfully get all user in room", usersInRoom));
 });
 RoomController.create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const payload = req.body;
-    const result = yield IRoom_1.default.create({
-        createdAt: new Date().toISOString(),
-        name: payload.name,
-        capacity: +payload.capacity,
-        filled: +payload.filled,
-        adminRoom: +payload.adminRoom,
-        image: payload.image,
-        status: payload.status
-    }).save();
-    res.send((0, response_builder_1.success)("Successfully create room", result));
+    try {
+        const payload = req.body;
+        const result = yield IRoom_1.default.create(Object.assign({ createdAt: new Date().toISOString() }, payload)).save();
+        res.send((0, response_builder_1.success)("Successfully create room", result));
+    }
+    catch (e) {
+        console.log(e);
+        res.status(500).send(e);
+    }
 });
 RoomController.getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield IRoom_1.default.find();
