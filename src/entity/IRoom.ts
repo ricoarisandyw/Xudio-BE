@@ -7,14 +7,14 @@ export default class IRoom extends AppBaseEntity {
     name!: string
     @Column({ type: "string" })
     status!: string
-    @Column({ type: "int" })
-    filled!: number
+    @Column({ type: "int", default: "0" })
+    filled?: number
     @Column({ type: "int" })
     capacity!: number
-    @Column({ type: "int" })
-    adminRoom!: number
+    @Column({ type: "int", default: "0" })
+    adminRoom?: number
     @Column({ type: "string" })
     image!: string
-
-
-}
+    @Column({ type: "int", default: "0" })
+    idCourse?: number
+} 

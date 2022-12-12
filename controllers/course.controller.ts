@@ -1,10 +1,24 @@
 import { RequestHandler } from "express";
 import { ICourse } from "../src/entity/ICourse";
+import IRoom from "../src/entity/IRoom";
 import IUserInCourse from "../src/entity/IUserInCourse";
 import { getIdFromJWT } from "../utils/jwt-util";
 import { failed, success } from "../utils/response-builder";
 
 export default class CourseController {
+    static getRoom:RequestHandler = async (req, res) => {
+        try {
+            const { idCourse } = req.params
+
+            const rooms = await IRoom.findBy({
+                idCourse: +idCourse
+            })
+            res.send(success("Successfully get rooms", rooms))
+        } catch(e) {
+            res.status(500).send(e)
+        }
+    }
+
     static joinCourse:RequestHandler = async (req, res) => {
         const { idCourse } = req.params
         const { idUser } = req.body
@@ -48,8 +62,13 @@ export default class CourseController {
             where: {
                 id: +req.params.idCourse
             }
-        })
-        res.send(success("Successfully get course", course))
+        }) 
+        const detailCourse = {
+            ...course,
+            rooms: await IRoom.findBy({
+            idCourse: course?.id
+        })}
+        res.send(success("Successfully get course", detailCourse))
     }
 
     static getUsersInCourse: RequestHandler = async (req, res) => {
@@ -64,7 +83,15 @@ export default class CourseController {
 
     static getAllCourse: RequestHandler = async (req, res) => {
         const courses = await ICourse.find()
-        res.send(success("Successfully get all course", courses))
+        const mappedCourses = await Promise.all(courses.map(async (course) => {
+            return {
+                ...course,
+                roomSize: await IRoom.countBy({
+                    idCourse: +course.id
+                })
+            }
+        }))
+        res.send(success("Successfully get all course", mappedCourses))
     }
 
     static startCourse: RequestHandler = async (req, res) => {

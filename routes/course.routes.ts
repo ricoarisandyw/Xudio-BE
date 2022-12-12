@@ -11,10 +11,13 @@ courseRouter.delete('/:idCourse', CourseController.deleteCourse);
 
 courseRouter.post('/upload', CourseController.upload);
 
-// COURSE x USER
+// COURSE x USER 
 courseRouter.post('/:idCourse/join', CourseController.joinCourse);
 courseRouter.get('/:idCourse/user', CourseController.getUsersInCourse);
 courseRouter.post('/:idCourse/start', CourseController.startCourse);
 courseRouter.post('/:idCourse/end', CourseController.endCourse);
+
+// COURSE x ROOM
+courseRouter.get('/:idCourse/room', CourseController.getRoom);
 
 export default courseRouter;

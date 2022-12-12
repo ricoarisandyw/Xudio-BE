@@ -6,5 +6,5 @@ export default class AppBaseEntity extends BaseEntity {
     @Column({ type: "timestamptz", default: () => "CURRENT_TIMESTAMP" })
     createdAt!: Date
     @Column({ type: "timestamptz",nullable: true })
-    updateAt!: Date
+    updatedAt!: Date
 }

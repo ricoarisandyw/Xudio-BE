@@ -8,6 +8,14 @@ import { IUserInRoom } from "../src/entity/IUserInRoom";
 import { failed, success } from "../utils/response-builder";
 
 export default class RoomController {
+    static deleteRoom: RequestHandler = async (req, res) => {
+        const { idRoom } = req.params
+
+        await IRoom.createQueryBuilder().where("id = :id", { id : idRoom }).delete().execute()
+
+        res.send(success("Successfully delete room"))
+    }
+
     static getDetail: RequestHandler = async (req, res) => {
         const { id } = req.params
 
@@ -102,18 +110,25 @@ export default class RoomController {
     }
 
     static create: RequestHandler = async (req, res) => {
-        const payload = req.body
+        try {
+            const payload = req.body
 
-        const result = await IRoom.create({
-                createdAt: new Date().toISOString(),
-                name: payload.name,
-                capacity: +payload.capacity,
-                filled: +payload.filled,
-                adminRoom: +payload.adminRoom,
-                image: payload.image,
-                status: payload.status
-            }).save()
-        res.send(success("Successfully create room", result))
+            const result = await IRoom.create({
+                    createdAt: new Date().toISOString(),
+                    ...payload,
+                    // name: payload.name,
+                    // capacity: +payload.capacity,
+                    // filled: +payload.filled,
+                    // adminRoom: +payload.adminRoom,
+                    // image: payload.image,
+                    // status: payload.status,
+                    // idCourse: payload.idCourse
+                }).save()
+            res.send(success("Successfully create room", result))
+        } catch(e) {
+            console.log(e)
+            res.status(500).send(e)
+        }
     }
 
     static getAll: RequestHandler = async (req, res) => {
@@ -121,4 +136,4 @@ export default class RoomController {
         
         res.send(success("Successfully get all room", result))
     }
-}
+} 

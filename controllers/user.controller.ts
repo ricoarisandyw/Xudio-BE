@@ -121,9 +121,9 @@ export default class UserController {
             user.username = req.body.username
             user.password = await encrypt(req.body.password)
             const saved = await user.save()
-            res.send({ message: "User successfully registered", data: saved });
+            res.send({ status: "success", message: "User successfully registered", data: saved });
         } else {
-            res.send({ message: "Username already exist" });
+            res.status(500).send({ message: "Username already exist" });
         }
     }
 
