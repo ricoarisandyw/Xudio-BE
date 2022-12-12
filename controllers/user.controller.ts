@@ -35,7 +35,7 @@ export default class UserController {
                     filled: r.filled,
                     image: "",
                     createdAt: r.createdAt,
-                    updateAt: new Date()
+                    updatedAt: new Date()
                 }))
 
                 res.send(success("Successfully get my room", allRooms))

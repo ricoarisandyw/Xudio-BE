@@ -50,7 +50,7 @@ export default class RoomController {
             capacity: room?.capacity,
             filled: room?.filled,
             createdAt: room?.createdAt,
-            updateAt: new Date(),
+            updatedAt: new Date(),
             image: room?.image,
             teacher: teacher,
             members: userInRoom.map((u) => {
