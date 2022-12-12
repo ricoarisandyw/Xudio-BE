@@ -48,7 +48,7 @@ UserController.getUserRoom = (req, res) => __awaiter(void 0, void 0, void 0, fun
                 filled: r.filled,
                 image: "",
                 createdAt: r.createdAt,
-                updateAt: new Date()
+                updatedAt: new Date()
             }));
             res.send((0, response_builder_1.success)("Successfully get my room", allRooms));
         }

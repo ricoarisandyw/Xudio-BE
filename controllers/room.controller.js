@@ -56,7 +56,7 @@ RoomController.getDetail = (req, res) => __awaiter(void 0, void 0, void 0, funct
         capacity: room === null || room === void 0 ? void 0 : room.capacity,
         filled: room === null || room === void 0 ? void 0 : room.filled,
         createdAt: room === null || room === void 0 ? void 0 : room.createdAt,
-        updateAt: new Date(),
+        updatedAt: new Date(),
         image: room === null || room === void 0 ? void 0 : room.image,
         teacher: teacher,
         members: userInRoom.map((u) => {
