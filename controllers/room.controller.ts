@@ -162,8 +162,17 @@ export default class RoomController {
     }
 
     static getAll: RequestHandler = async (req, res) => {
-        const result = await IRoom.find();
+        const rooms = await IRoom.find();
+        const mapped = await Promise.all(rooms.map(async (room) => {
+            return {
+                ...room,
+                filled: await IUserInRoom.countBy({
+                    idRoom: room.id
+                })
+            }
+        }))
+
         
-        res.send(success("Successfully get all room", result))
+        res.send(success("Successfully get all room", mapped))
     }
 } 

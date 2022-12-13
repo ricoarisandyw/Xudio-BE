@@ -1,7 +1,9 @@
 import { RequestHandler } from "express";
 import { ICourse } from "../src/entity/ICourse";
+import { ILesson } from "../src/entity/ILesson";
 import IRoom from "../src/entity/IRoom";
 import IUserInCourse from "../src/entity/IUserInCourse";
+import { IUserInRoom } from "../src/entity/IUserInRoom";
 import { getIdFromJWT } from "../utils/jwt-util";
 import { failed, success } from "../utils/response-builder";
 
@@ -65,9 +67,20 @@ export default class CourseController {
         }) 
         const detailCourse = {
             ...course,
-            rooms: await IRoom.findBy({
+            lessons: await ILesson.findBy({
+                idCourse: course?.id
+            }),
+            rooms: await Promise.all((await IRoom.findBy({
             idCourse: course?.id
-        })}
+        })).map(async (room) => {
+            const filled = await IUserInRoom.countBy({
+                idRoom: room.id
+            })
+            return {
+                ...room,
+                filled
+            }
+        }))}
         res.send(success("Successfully get course", detailCourse))
     }
 
