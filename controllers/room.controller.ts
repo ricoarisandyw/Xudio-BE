@@ -12,6 +12,7 @@ export default class RoomController {
         const { idRoom } = req.params
 
         await IRoom.createQueryBuilder().where("id = :id", { id : idRoom }).delete().execute()
+        await IUserInRoom.createQueryBuilder().where("idRoom = :id", { id : idRoom }).delete().execute()
 
         res.send(success("Successfully delete room"))
     }
