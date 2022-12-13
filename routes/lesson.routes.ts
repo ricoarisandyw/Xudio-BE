@@ -4,6 +4,7 @@ import LessonController from '../controllers/lesson.controller';
 const lessonRouter = express.Router();
 
 lessonRouter.get("/", LessonController.getLesson)
+lessonRouter.get("/course/multi", LessonController.getLessonByMultiIdCourse)
 lessonRouter.get("/course/:idCourse", LessonController.getLessonByCourseId)
 lessonRouter.post("/", LessonController.addLesson)
 lessonRouter.put("/", LessonController.updateLesson)

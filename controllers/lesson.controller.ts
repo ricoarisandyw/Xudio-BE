@@ -1,8 +1,16 @@
 import { RequestHandler } from "express";
+import { In } from "typeorm";
 import { ILesson } from "../src/entity/ILesson";
 import { success } from "../utils/response-builder";
 
 export default class LessonController {
+    static getLessonByMultiIdCourse: RequestHandler = async (req, res) => {
+        const lessons = await ILesson.findBy({
+            idCourse: In(req.query.idCourse as string[])
+        })
+        return res.send(success("Successfully get lesson", lessons))
+    }
+
     static getLesson: RequestHandler = async (req, res) => {
         const lessons = await ILesson.find()
         return res.send(success("Successfully get lesson", lessons))

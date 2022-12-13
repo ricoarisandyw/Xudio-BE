@@ -5,6 +5,7 @@ import ITeacher from "../src/entity/ITeacher";
 import ITeacherInRoom from "../src/entity/ITeacherInRoom";
 import IUserDetail from "../src/entity/IUserDetail";
 import { IUserInRoom } from "../src/entity/IUserInRoom";
+import { getIdFromJWT } from "../utils/jwt-util";
 import { failed, success } from "../utils/response-builder";
 
 export default class RoomController {
@@ -68,6 +69,34 @@ export default class RoomController {
         }
 
         res.send(success("Successfully get detail room", parse))
+    }
+
+    static joinByCode: RequestHandler = async (req, res) => {
+        const jwt = req.headers.authorization as string;
+        const idUser = getIdFromJWT(jwt.replace("Bearer ", ""));
+        console.log({idUser})
+        const {code} = req.body
+        // not being used
+        // const idCourse = code.slice(0,3)
+        const idRoom = code.slice(3,6)
+
+        const payload = req.body
+
+        const existing = await IUserInRoom.findOneBy({
+            idRoom,
+            idUser: +idUser
+        })
+
+        if(existing){
+            return res.json(failed("User already in room"))
+        } else {
+            const newData = new IUserInRoom()
+            newData.idRoom = +idRoom
+            newData.idUser = +idUser
+            const result = await newData.save()
+    
+            return res.send(success("Successfully join room", result))
+        }
     }
 
     static join: RequestHandler = async (req, res) => {
