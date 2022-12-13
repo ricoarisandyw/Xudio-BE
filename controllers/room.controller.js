@@ -19,6 +19,7 @@ const ITeacher_1 = __importDefault(require("../src/entity/ITeacher"));
 const ITeacherInRoom_1 = __importDefault(require("../src/entity/ITeacherInRoom"));
 const IUserDetail_1 = __importDefault(require("../src/entity/IUserDetail"));
 const IUserInRoom_1 = require("../src/entity/IUserInRoom");
+const jwt_util_1 = require("../utils/jwt-util");
 const response_builder_1 = require("../utils/response-builder");
 class RoomController {
 }
@@ -72,6 +73,30 @@ RoomController.getDetail = (req, res) => __awaiter(void 0, void 0, void 0, funct
         adminRoom: room === null || room === void 0 ? void 0 : room.adminRoom
     };
     res.send((0, response_builder_1.success)("Successfully get detail room", parse));
+});
+RoomController.joinByCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const jwt = req.headers.authorization;
+    const idUser = (0, jwt_util_1.getIdFromJWT)(jwt.replace("Bearer ", ""));
+    console.log({ idUser });
+    const { code } = req.body;
+    // not being used
+    // const idCourse = code.slice(0,3)
+    const idRoom = code.slice(3, 6);
+    const payload = req.body;
+    const existing = yield IUserInRoom_1.IUserInRoom.findOneBy({
+        idRoom,
+        idUser: +idUser
+    });
+    if (existing) {
+        return res.json((0, response_builder_1.failed)("User already in room"));
+    }
+    else {
+        const newData = new IUserInRoom_1.IUserInRoom();
+        newData.idRoom = +idRoom;
+        newData.idUser = +idUser;
+        const result = yield newData.save();
+        return res.send((0, response_builder_1.success)("Successfully join room", result));
+    }
 });
 RoomController.join = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const payload = req.body;

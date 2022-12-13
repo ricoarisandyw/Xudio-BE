@@ -19,7 +19,7 @@ userRouter.get('/rooms', user_controller_1.default.getUserRoom);
 userRouter.get('/getUser', auth_middleware_1.AuthMiddleware, user_controller_1.default.getUser);
 userRouter.post('/detail', auth_middleware_1.AuthMiddleware, user_controller_1.default.createOrUpdateUserDetail);
 userRouter.get('/password', auth_middleware_1.AuthMiddleware, user_controller_1.default.getPassword);
-userRouter.get('/logout', auth_middleware_1.AuthMiddleware, user_controller_1.default.logout);
+userRouter.post('/logout', auth_middleware_1.AuthMiddleware, user_controller_1.default.logout);
 userRouter.get('/:idUser/course', auth_middleware_1.AuthMiddleware, user_controller_1.default.getCourse);
 userRouter.get('/summary', auth_middleware_1.AuthMiddleware, user_controller_1.default.getSummary);
 exports.default = userRouter;

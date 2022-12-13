@@ -10,12 +10,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
+const typeorm_1 = require("typeorm");
 const ILesson_1 = require("../src/entity/ILesson");
 const response_builder_1 = require("../utils/response-builder");
 class LessonController {
 }
 exports.default = LessonController;
 _a = LessonController;
+LessonController.getLessonByMultiIdCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const lessons = yield ILesson_1.ILesson.findBy({
+        idCourse: (0, typeorm_1.In)(req.query.idCourse)
+    });
+    return res.send((0, response_builder_1.success)("Successfully get lesson", lessons));
+});
 LessonController.getLesson = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const lessons = yield ILesson_1.ILesson.find();
     return res.send((0, response_builder_1.success)("Successfully get lesson", lessons));

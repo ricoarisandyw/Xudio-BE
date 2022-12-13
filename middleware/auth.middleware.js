@@ -14,7 +14,7 @@ const AuthMiddleware = (req, res, next) => {
         jsonwebtoken_1.default.verify(token, process_1.env.TOKEN_SECRET || "", (err, decoded) => {
             console.log({ err });
             if (err) {
-                res.status(500).send((0, response_builder_1.failed)("Failed to authenticate token", err));
+                res.status(401).send((0, response_builder_1.failed)("Failed to authenticate token", err));
             }
             else {
                 next();
