@@ -14,8 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const ICourse_1 = require("../src/entity/ICourse");
+const ILesson_1 = require("../src/entity/ILesson");
 const IRoom_1 = __importDefault(require("../src/entity/IRoom"));
 const IUserInCourse_1 = __importDefault(require("../src/entity/IUserInCourse"));
+const IUserInRoom_1 = require("../src/entity/IUserInRoom");
 const jwt_util_1 = require("../utils/jwt-util");
 const response_builder_1 = require("../utils/response-builder");
 class CourseController {
@@ -77,9 +79,16 @@ CourseController.getCourse = (req, res) => __awaiter(void 0, void 0, void 0, fun
             id: +req.params.idCourse
         }
     });
-    const detailCourse = Object.assign(Object.assign({}, course), { rooms: yield IRoom_1.default.findBy({
+    const detailCourse = Object.assign(Object.assign({}, course), { lessons: yield ILesson_1.ILesson.findBy({
             idCourse: course === null || course === void 0 ? void 0 : course.id
-        }) });
+        }), rooms: yield Promise.all((yield IRoom_1.default.findBy({
+            idCourse: course === null || course === void 0 ? void 0 : course.id
+        })).map((room) => __awaiter(void 0, void 0, void 0, function* () {
+            const filled = yield IUserInRoom_1.IUserInRoom.countBy({
+                idRoom: room.id
+            });
+            return Object.assign(Object.assign({}, room), { filled });
+        }))) });
     res.send((0, response_builder_1.success)("Successfully get course", detailCourse));
 });
 CourseController.getUsersInCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {

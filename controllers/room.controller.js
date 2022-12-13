@@ -139,6 +139,11 @@ RoomController.create = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 RoomController.getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield IRoom_1.default.find();
-    res.send((0, response_builder_1.success)("Successfully get all room", result));
+    const rooms = yield IRoom_1.default.find();
+    const mapped = yield Promise.all(rooms.map((room) => __awaiter(void 0, void 0, void 0, function* () {
+        return Object.assign(Object.assign({}, room), { filled: yield IUserInRoom_1.IUserInRoom.countBy({
+                idRoom: room.id
+            }) });
+    })));
+    res.send((0, response_builder_1.success)("Successfully get all room", mapped));
 });
