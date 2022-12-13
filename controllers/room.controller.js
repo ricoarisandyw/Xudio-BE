@@ -27,6 +27,7 @@ _a = RoomController;
 RoomController.deleteRoom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { idRoom } = req.params;
     yield IRoom_1.default.createQueryBuilder().where("id = :id", { id: idRoom }).delete().execute();
+    yield IUserInRoom_1.IUserInRoom.createQueryBuilder().where("idRoom = :id", { id: idRoom }).delete().execute();
     res.send((0, response_builder_1.success)("Successfully delete room"));
 });
 RoomController.getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {

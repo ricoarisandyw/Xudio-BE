@@ -12,8 +12,9 @@ const AuthMiddleware = (req, res, next) => {
     const token = authorization.replace("Bearer ", "");
     if (token) {
         jsonwebtoken_1.default.verify(token, process_1.env.TOKEN_SECRET || "", (err, decoded) => {
+            console.log({ err });
             if (err) {
-                res.send((0, response_builder_1.failed)("Failed to authenticate token", err));
+                res.status(500).send((0, response_builder_1.failed)("Failed to authenticate token", err));
             }
             else {
                 next();
@@ -21,7 +22,7 @@ const AuthMiddleware = (req, res, next) => {
         });
     }
     else {
-        res.send((0, response_builder_1.failed)("No token provided", {}));
+        res.status(500).send((0, response_builder_1.failed)("No token provided", {}));
     }
 };
 exports.AuthMiddleware = AuthMiddleware;
