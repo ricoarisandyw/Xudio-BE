@@ -16,6 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const typeorm_1 = require("typeorm");
 const data_source_1 = require("../src/data-source");
+const ICourse_1 = require("../src/entity/ICourse");
 const IRoom_1 = __importDefault(require("../src/entity/IRoom"));
 const IUser_1 = __importDefault(require("../src/entity/IUser"));
 const IUserDetail_1 = __importDefault(require("../src/entity/IUserDetail"));
@@ -279,21 +280,32 @@ UserController.logout = (req, res) => {
         "isSuccess": true
     }));
 };
-UserController.getCourse = (req, res) => {
-    res.send((0, response_builder_1.success)("Get Course", [
-        {
-            "uuid": "2",
-            "name": "Course Soldering",
-            "description": "Practice soldering",
-            "companyID": "1",
-            "progress": 0.3,
-            "startCourseAt": "2022-01-10T14:06:55.441Z",
-            "duration": 36000,
-            "endCourseAt": "2022-01-10T14:06:55.441Z",
-            "beginDate": "2022-01-10T14:06:55.441Z",
-            "dueDate": "2022-01-10T14:06:55.441Z",
-            "createdAt": "2022-01-10T14:06:55.441Z",
-            "updatedAt": "2022-01-10T14:06:55.441Z"
-        }
-    ]));
-};
+// static getCourse: RequestHandler = (req, res) => {
+//     res.send(success("Get Course", [
+//         {
+//             "uuid": "2",
+//             "name": "Course Soldering",
+//             "description": "Practice soldering",
+//             "companyID": "1",
+//             "progress": 0.3,
+//             "startCourseAt": "2022-01-10T14:06:55.441Z",
+//             "duration": 36000,
+//             "endCourseAt": "2022-01-10T14:06:55.441Z",
+//             "beginDate": "2022-01-10T14:06:55.441Z",
+//             "dueDate": "2022-01-10T14:06:55.441Z",
+//             "createdAt": "2022-01-10T14:06:55.441Z",
+//             "updatedAt": "2022-01-10T14:06:55.441Z"
+//         }
+//     ]));
+// }
+UserController.getCourse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const jwt = req.headers.authorization;
+    const iduser = (0, jwt_util_1.getIdFromJWT)(jwt.replace("Bearer ", ""));
+    const userInCourse = yield IUserInCourse_1.default.findBy({
+        idUser: +iduser
+    });
+    const courses = yield ICourse_1.ICourse.findBy({
+        id: (0, typeorm_1.In)(userInCourse.map((usr) => usr.idCourse))
+    });
+    res.send((0, response_builder_1.success)("Get Course", courses.map((c) => (Object.assign({ "uuid": "2", "companyID": "1", "progress": 1, "startCourseAt": "2022-01-10T14:06:55.441Z", "duration": 36000, "endCourseAt": "2022-01-10T14:06:55.441Z" }, c)))));
+});
