@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import { RequestHandler } from "express";
 import { In } from 'typeorm';
 import { AppDataSource } from '../src/data-source';
+import { ICourse } from '../src/entity/ICourse';
 import IRoom from '../src/entity/IRoom';
 import IUser from "../src/entity/IUser";
 import IUserDetail from '../src/entity/IUserDetail';
@@ -280,23 +281,46 @@ export default class UserController {
         }));
     }
 
-    static getCourse: RequestHandler = (req, res) => {
-        res.send(success("Get Course", [
-            {
-                "uuid": "2",
-                "name": "Course Soldering",
-                "description": "Practice soldering",
-                "companyID": "1",
-                "progress": 0.3,
-                "startCourseAt": "2022-01-10T14:06:55.441Z",
-                "duration": 36000,
-                "endCourseAt": "2022-01-10T14:06:55.441Z",
-                "beginDate": "2022-01-10T14:06:55.441Z",
-                "dueDate": "2022-01-10T14:06:55.441Z",
-                "createdAt": "2022-01-10T14:06:55.441Z",
-                "updatedAt": "2022-01-10T14:06:55.441Z"
-            }
-        ]));
+    // static getCourse: RequestHandler = (req, res) => {
+    //     res.send(success("Get Course", [
+    //         {
+    //             "uuid": "2",
+    //             "name": "Course Soldering",
+    //             "description": "Practice soldering",
+    //             "companyID": "1",
+    //             "progress": 0.3,
+    //             "startCourseAt": "2022-01-10T14:06:55.441Z",
+    //             "duration": 36000,
+    //             "endCourseAt": "2022-01-10T14:06:55.441Z",
+    //             "beginDate": "2022-01-10T14:06:55.441Z",
+    //             "dueDate": "2022-01-10T14:06:55.441Z",
+    //             "createdAt": "2022-01-10T14:06:55.441Z",
+    //             "updatedAt": "2022-01-10T14:06:55.441Z"
+    //         }
+    //     ]));
+    // }
+
+    static getCourse: RequestHandler = async (req, res) => {
+        const jwt = req.headers.authorization as string;
+
+        const iduser = getIdFromJWT(jwt.replace("Bearer ", ""));
+        const userInCourse = await IUserInCourse.findBy({
+            idUser: +iduser
+        })
+
+        const courses = await ICourse.findBy({
+            id: In(userInCourse.map((usr) => usr.idCourse))
+        })
+
+        res.send(success("Get Course", courses.map((c) => ({
+            "uuid": "2",
+            "companyID": "1",
+            "progress": 1,
+            "startCourseAt": "2022-01-10T14:06:55.441Z",
+            "duration": 36000,
+            "endCourseAt": "2022-01-10T14:06:55.441Z",
+            ...c,
+        }))));
     }
 }
 
