@@ -223,13 +223,16 @@ UserController.getSummary = (req, res) => __awaiter(void 0, void 0, void 0, func
                     idUser: +iduser
                 }
             });
-            console.log({ user_detail });
             const courses = yield IUserInCourse_1.default.find({
                 where: {
                     idUser: +iduser
                 }
             });
-            console.log({ courses });
+            const rooms = yield IUserInRoom_1.IUserInRoom.find({
+                where: {
+                    idUser: +iduser
+                }
+            });
             res.send((0, response_builder_1.success)("Successfully get summary", {
                 "id": user === null || user === void 0 ? void 0 : user.id,
                 "email": user_detail === null || user_detail === void 0 ? void 0 : user_detail.email,
@@ -237,10 +240,10 @@ UserController.getSummary = (req, res) => __awaiter(void 0, void 0, void 0, func
                 "name": user_detail === null || user_detail === void 0 ? void 0 : user_detail.name,
                 "nip": user_detail === null || user_detail === void 0 ? void 0 : user_detail.nip,
                 "role": user_detail === null || user_detail === void 0 ? void 0 : user_detail.role,
-                "completedCourse": courses.length,
-                "totalCourse": courses.length,
-                "averageScore": courses.length,
-                "roomJoined": courses.length
+                "completedCourse": courses.filter((c) => c.score).length,
+                "totalCourse": courses.filter,
+                "averageScore": courses.reduce((cur, c) => +c.score + cur, 0) / courses.length,
+                "roomJoined": rooms.length
             }));
         }
         else {
