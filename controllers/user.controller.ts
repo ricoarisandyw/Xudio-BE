@@ -221,14 +221,18 @@ export default class UserController {
                         idUser: +iduser
                     }
                 })
-                console.log({ user_detail })
 
                 const courses = await IUserInCourse.find({
                     where: {
                         idUser: +iduser
                     }
                 })
-                console.log({ courses })
+
+                const rooms = await IUserInRoom.find({
+                    where: {
+                        idUser: +iduser
+                    }
+                })
 
                 res.send(success("Successfully get summary", {
                     "id": user?.id,
@@ -237,10 +241,10 @@ export default class UserController {
                     "name": user_detail?.name,
                     "nip": user_detail?.nip,
                     "role": user_detail?.role,
-                    "completedCourse": courses.length,
-                    "totalCourse": courses.length,
-                    "averageScore": courses.length,
-                    "roomJoined": courses.length
+                    "completedCourse": courses.filter((c) => c.score).length,
+                    "totalCourse": courses.filter,
+                    "averageScore": courses.reduce((cur, c) => +c.score + cur, 0) / courses.length,
+                    "roomJoined": rooms.length
                 }))
             } else {
                 res.send(failed("JWT false", {}))
