@@ -241,8 +241,8 @@ UserController.getSummary = (req, res) => __awaiter(void 0, void 0, void 0, func
                 "name": user_detail === null || user_detail === void 0 ? void 0 : user_detail.name,
                 "nip": user_detail === null || user_detail === void 0 ? void 0 : user_detail.nip,
                 "role": user_detail === null || user_detail === void 0 ? void 0 : user_detail.role,
-                "completedCourse": courses.filter((c) => c.score).length,
-                "totalCourse": courses.filter,
+                "completedCourse": courses.filter((c) => { var _b; return new Date().getTime() > ((_b = c.endCourse) === null || _b === void 0 ? void 0 : _b.getTime()); }).length,
+                "totalCourse": courses.length,
                 "averageScore": courses.reduce((cur, c) => +c.score + cur, 0) / courses.length,
                 "roomJoined": rooms.length
             }));
