@@ -242,8 +242,8 @@ export default class UserController {
                     "name": user_detail?.name,
                     "nip": user_detail?.nip,
                     "role": user_detail?.role,
-                    "completedCourse": courses.filter((c) => c.score).length,
-                    "totalCourse": courses.filter,
+                    "completedCourse": courses.filter((c) => new Date().getTime() > c.endCourse?.getTime()).length,
+                    "totalCourse": courses.length,
                     "averageScore": courses.reduce((cur, c) => +c.score + cur, 0) / courses.length,
                     "roomJoined": rooms.length
                 }))
@@ -323,4 +323,3 @@ export default class UserController {
         }))));
     }
 }
-
